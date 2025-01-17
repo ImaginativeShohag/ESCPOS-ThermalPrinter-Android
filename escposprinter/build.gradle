@@ -7,13 +7,12 @@ def libraryVersionCode = 3003000
 def libraryVersionName = "3.3.0"
 
 android {
-    compileSdkVersion 33
+    namespace 'com.dantsu.escposprinter'
+    compileSdk 35
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 33
-        versionCode libraryVersionCode
-        versionName libraryVersionName
+        minSdk 21
+        targetSdk 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -26,16 +25,25 @@ android {
         }
     }
 
+    publishing {
+        // Publishes "fullRelease" build variant with "fullRelease" component created by
+        // Android Gradle plugin
+        singleVariant("release")
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.21"))
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.zxing:core:3.4.0'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }
 
 
