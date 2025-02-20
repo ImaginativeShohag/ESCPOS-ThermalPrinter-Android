@@ -15,6 +15,8 @@ import com.google.zxing.qrcode.encoder.ByteMatrix;
 import com.google.zxing.qrcode.encoder.Encoder;
 import com.google.zxing.qrcode.encoder.QRCode;
 import com.hierynomus.smbj.share.PrinterShare;
+
+import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -370,7 +372,7 @@ public class SharedPrinterCommand {
 
             if (!Arrays.equals(this.currentTextReverseColor, textReverseColor)) {
                 //     this.printerConnection.write(textReverseColor);
-              //  byteArrayList.add(textReverseColor);
+                byteArrayList.add(textReverseColor);
                 this.currentTextReverseColor = textReverseColor;
             }
             // Log.d("Log404", "byte :  " + bytesToHex(textBytes));
@@ -381,7 +383,7 @@ public class SharedPrinterCommand {
             InputStream[] streams = {data};
             SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
             printerShare.print(fullStream);*/
-         //   byteArrayList.add(textBytes);
+            byteArrayList.add(textBytes);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -448,16 +450,16 @@ public class SharedPrinterCommand {
     }
 
     public SharedPrinterCommand printImage(byte[] image) throws EscPosConnectionException {
-
-        // this.useEscAsteriskCommand = false;
+       /* if (!this.printerConnection.isConnected()) {
+            return this;
+        }*/
 
         byte[][] bytesToPrint = this.useEscAsteriskCommand ? SharedPrinterCommand.convertGSv0ToEscAsterisk(image) : new byte[][]{image};
-        // byteArrayList.add( new byte[]{0x0A});
+
         for (byte[] bytes : bytesToPrint) {
             // this.printerConnection.write(bytes);
             //
-
-         //   byteArrayList.add(bytes);
+            byteArrayList.add(bytes);
             // this.printerConnection.send();
             //  printerShare.print(new ByteArrayInputStream(bytes));
         }
@@ -497,9 +499,10 @@ public class SharedPrinterCommand {
 /*        byteArrayList.add(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
         byteArrayList.add(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
         byteArrayList.add(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});*/
-
-       /* byteArrayList.add(new byte[]{0x0A});
-        */
+        byteArrayList.add(new byte[]{0x0A});
+        byteArrayList.add(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
+        byteArrayList.add(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
+        byteArrayList.add(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});
         byteArrayList.add(barcodeCommand);
 
 

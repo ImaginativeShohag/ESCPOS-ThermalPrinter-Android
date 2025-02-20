@@ -649,11 +649,8 @@ public class MainActivity extends AppCompatActivity {
 
         String terminalId = "Counter-1";
         String testStirng =
-             /*   "[C]Barnoi Life style\n" +
-                        policiesTwo +*/
-                "[C]<barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n";
-                       /* "[C]Powered by: Softzino Technologies\n" +
-                        "[C]https://softzio.com";*/
+
+                "[C] <barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n";
         //  policiesTwo +*/
         // "[C] <barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n";
         String printString = "";
@@ -662,7 +659,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPrinterCommand sharedPrinterCommand = new SharedPrinterCommand(sharedPrinterSize.getEncoding(),
                 printerShare);
-        sharedPrinterCommand.useEscAsteriskCommand(false);
+        sharedPrinterCommand.useEscAsteriskCommand(true);
         SharedPrintTextParser textParser = new SharedPrintTextParser(sharedPrinterSize);
         String[] stringLines = testStirng.split("\n|\r\n");
         SharedPrinterTextParserLine[] linesParsed = new SharedPrinterTextParserLine[stringLines.length];
@@ -700,13 +697,10 @@ public class MainActivity extends AppCompatActivity {
 
         byte[] LF = new byte[]{0x0A};  // Feed 5 lines
         byte[] FEED_PAPER = new byte[]{0x1B, 0x64, 0x05};  // Feed 5 lines
-        byte[] CUT_PAPER = new byte[]{0x1D, 0x56, 0x00};
-        // Full cut
+        byte[] CUT_PAPER = new byte[]{0x1D, 0x56, 0x00};   // Full cut
 
         byte[] setCharSizeNormal = new byte[]{0x1b, 0x21, 0x01};
         byte[] setPrintDensity = new byte[]{0x1D, 0x7C, 0x03};
-        byte[] setLineSpacing = new byte[]{0x1B, 0x33, 0x02};  // 16 dots line spacing
-        ByteArrayInputStream lineSpacingStream = new ByteArrayInputStream(setLineSpacing);
         ByteArrayInputStream feedStream = new ByteArrayInputStream(FEED_PAPER);
         ByteArrayInputStream cutStream = new ByteArrayInputStream(CUT_PAPER);
         ByteArrayInputStream lfStream = new ByteArrayInputStream(LF);
@@ -718,7 +712,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         ByteArrayInputStream textStream = new ByteArrayInputStream(messageByteArray);
-        InputStream[] streams = {fontsize, density,lfStream, textStream, feedStream, cutStream};
+        InputStream[] streams = {fontsize, density, lfStream, textStream, feedStream, cutStream};
         SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
 
         // Send the print job
@@ -728,6 +722,8 @@ public class MainActivity extends AppCompatActivity {
         printerShare.close();
 
     }
+
+
 }
 
 
