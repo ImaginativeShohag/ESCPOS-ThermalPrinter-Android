@@ -117,6 +117,7 @@ public class EscPosPrinter extends EscPosPrinterSize {
                 .setFormattedText(text)
                 .parse();
 
+        // FIXME: 1/29/25 is need disable for tcp
         this.printer.reset();
 
         for (PrinterTextParserLine line : linesParsed) {
@@ -135,7 +136,7 @@ public class EscPosPrinter extends EscPosPrinterSize {
                 this.printer.newLine();
             }
         }
-
+        this.printer.print();
         this.printer.feedPaper(dotsFeedPaper);
         return this;
     }
@@ -174,7 +175,7 @@ public class EscPosPrinter extends EscPosPrinterSize {
         }
 
         this.printFormattedText(text, dotsFeedPaper);
-        this.printer.cutPaper();
+       // this.printer.cutPaper();
 
         return this;
     }
@@ -203,7 +204,7 @@ public class EscPosPrinter extends EscPosPrinterSize {
         }
 
         this.printFormattedTextAndCut(text, dotsFeedPaper);
-        this.printer.openCashBox();
+       // this.printer.openCashBox();
         return this;
     }
 
@@ -221,7 +222,7 @@ public class EscPosPrinter extends EscPosPrinterSize {
      * @return Fluent interface
      */
     public EscPosPrinter printAllCharsetsEncodingCharacters() {
-        this.printer.printAllCharsetsEncodingCharacters();
+      //  this.printer.printAllCharsetsEncodingCharacters();
         return this;
     }
 
@@ -232,7 +233,7 @@ public class EscPosPrinter extends EscPosPrinterSize {
      * @return Fluent interface
      */
     public EscPosPrinter printCharsetsEncodingCharacters(int[] charsetsId) {
-        this.printer.printCharsetsEncodingCharacters(charsetsId);
+        //this.printer.printCharsetsEncodingCharacters(charsetsId);
         return this;
     }
 
@@ -243,7 +244,7 @@ public class EscPosPrinter extends EscPosPrinterSize {
      * @return Fluent interface
      */
     public EscPosPrinter printCharsetEncodingCharacters(int charsetId) {
-        this.printer.printCharsetEncodingCharacters(charsetId);
+        //this.printer.printCharsetEncodingCharacters(charsetId);
         return this;
     }
 }

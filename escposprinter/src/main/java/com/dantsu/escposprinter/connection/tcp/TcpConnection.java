@@ -1,5 +1,7 @@
 package com.dantsu.escposprinter.connection.tcp;
 
+import android.util.Log;
+
 import com.dantsu.escposprinter.connection.DeviceConnection;
 import com.dantsu.escposprinter.exceptions.EscPosConnectionException;
 
@@ -22,7 +24,7 @@ public class TcpConnection extends DeviceConnection {
      * @param port    Port of the device
      */
     public TcpConnection(String address, int port) {
-        this(address, port, 30);
+        this(address, port, 1000);
     }
 
     /**
@@ -56,16 +58,20 @@ public class TcpConnection extends DeviceConnection {
      */
     public TcpConnection connect() throws EscPosConnectionException {
         if (this.isConnected()) {
+            Log.d("Log404", "connect:  got the connect");
             return this;
         }
         try {
+            Log.d("Log404", "connect:  initialize the connect");
             this.socket = new Socket();
             this.socket.connect(new InetSocketAddress(InetAddress.getByName(this.address), this.port), this.timeout);
             this.outputStream = this.socket.getOutputStream();
             this.data = new byte[0];
+            Log.d("Log404", "connect:  ------- "+"success");
         } catch (IOException e) {
             e.printStackTrace();
             this.disconnect();
+            Log.d("Log404", "connect:  ----failed--- "+e.getMessage());
             throw new EscPosConnectionException("Unable to connect to TCP device.");
         }
         return this;
@@ -75,6 +81,8 @@ public class TcpConnection extends DeviceConnection {
      * Close the socket connection with the TCP device.
      */
     public TcpConnection disconnect() {
+        Log.d("Log404", "connect:  ----call disconnect--- ");
+
         this.data = new byte[0];
         if (this.outputStream != null) {
             try {

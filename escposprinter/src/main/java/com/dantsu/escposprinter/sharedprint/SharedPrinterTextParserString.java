@@ -1,15 +1,14 @@
-package com.dantsu.escposprinter.textparser;
+package com.dantsu.escposprinter.sharedprint;
+
+import com.dantsu.escposprinter.EscPosCharsetEncoding;
+import com.dantsu.escposprinter.EscPosPrinterCommands;
+import com.dantsu.escposprinter.exceptions.EscPosEncodingException;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
-import com.dantsu.escposprinter.EscPosCharsetEncoding;
-import com.dantsu.escposprinter.EscPosPrinter;
-import com.dantsu.escposprinter.EscPosPrinterCommands;
-import com.dantsu.escposprinter.exceptions.EscPosEncodingException;
-
-public class PrinterTextParserString implements IPrinterTextParserElement {
-    private EscPosPrinter printer;
+public class SharedPrinterTextParserString implements ISharedPrinterTextParserElement {
+    private SharedPrinterSize printer;
     private String text;
     private byte[] textSize;
     private byte[] textColor;
@@ -18,7 +17,7 @@ public class PrinterTextParserString implements IPrinterTextParserElement {
     private byte[] textUnderline;
     private byte[] textDoubleStrike;
 
-    public PrinterTextParserString(PrinterTextParserColumn printerTextParserColumn, String text, byte[] textSize, byte[] textColor, byte[] textReverseColor, byte[] textBold, byte[] textUnderline, byte[] textDoubleStrike) {
+    public SharedPrinterTextParserString(SharedPrinterTextColumn printerTextParserColumn, String text, byte[] textSize, byte[] textColor, byte[] textReverseColor, byte[] textBold, byte[] textUnderline, byte[] textDoubleStrike) {
         this.printer = printerTextParserColumn.getLine().getTextParser().getPrinter();
         this.text = text;
         this.textSize = textSize;
@@ -34,17 +33,17 @@ public class PrinterTextParserString implements IPrinterTextParserElement {
         EscPosCharsetEncoding charsetEncoding = this.printer.getEncoding();
 
         int coef = 1;
-        if(Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_DOUBLE_WIDTH) || Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG))
+        if (Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_DOUBLE_WIDTH) || Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG))
             coef = 2;
-        else if(Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_2))
+        else if (Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_2))
             coef = 3;
-        else if(Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_3))
+        else if (Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_3))
             coef = 4;
-        else if(Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_4))
+        else if (Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_4))
             coef = 5;
-        else if(Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_5))
+        else if (Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_5))
             coef = 6;
-        else if(Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_6))
+        else if (Arrays.equals(this.textSize, EscPosPrinterCommands.TEXT_SIZE_BIG_6))
             coef = 7;
 
         if (charsetEncoding != null) {
@@ -58,6 +57,11 @@ public class PrinterTextParserString implements IPrinterTextParserElement {
         return this.text.length() * coef;
     }
 
+
+    public String getText() {
+        return text;
+    }
+
     /**
      * Print text
      *
@@ -65,8 +69,9 @@ public class PrinterTextParserString implements IPrinterTextParserElement {
      * @return this Fluent method
      */
     @Override
-    public PrinterTextParserString print(EscPosPrinterCommands printerSocket) throws EscPosEncodingException {
+    public SharedPrinterTextParserString print(SharedPrinterCommand printerSocket) throws EscPosEncodingException {
         printerSocket.printText(this.text, this.textSize, this.textColor, this.textReverseColor, this.textBold, this.textUnderline, this.textDoubleStrike);
+
         // printerSocket.printText(this.text,3);
         return this;
     }

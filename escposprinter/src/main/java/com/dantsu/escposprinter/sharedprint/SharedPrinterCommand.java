@@ -1,11 +1,10 @@
-package com.dantsu.escposprinter;
+package com.dantsu.escposprinter.sharedprint;
 
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.util.Log;
 
+import com.dantsu.escposprinter.EscPosCharsetEncoding;
 import com.dantsu.escposprinter.barcode.Barcode;
-import com.dantsu.escposprinter.connection.DeviceConnection;
 import com.dantsu.escposprinter.exceptions.EscPosBarcodeException;
 import com.dantsu.escposprinter.exceptions.EscPosConnectionException;
 import com.dantsu.escposprinter.exceptions.EscPosEncodingException;
@@ -15,14 +14,14 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.google.zxing.qrcode.encoder.ByteMatrix;
 import com.google.zxing.qrcode.encoder.Encoder;
 import com.google.zxing.qrcode.encoder.QRCode;
-
+import com.hierynomus.smbj.share.PrinterShare;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 
-public class EscPosPrinterCommands {
+public class SharedPrinterCommand {
 
     public static final byte LF = 0x0A;
 
@@ -83,12 +82,10 @@ public class EscPosPrinterCommands {
     public static final int QRCODE_1 = 49;
     public static final int QRCODE_2 = 50;
 
-    private DeviceConnection printerConnection;
     private EscPosCharsetEncoding charsetEncoding;
+    private PrinterShare printerShare;
     private boolean useEscAsteriskCommand;
     private final List<byte[]> byteArrayList;
-
-
 
     public static byte[] initGSv0Command(int bytesByLine, int bitmapHeight) {
         int
@@ -109,20 +106,14 @@ public class EscPosPrinterCommands {
         return imageBytes;
     }
 
-    /**
-     * Convert Bitmap instance to a byte array compatible with ESC/POS printer.
-     *
-     * @param bitmap   Bitmap to be convert
-     * @param gradient false : Black and white image, true : Grayscale image
-     * @return Bytes contain the image in ESC/POS command
-     */
+
     public static byte[] bitmapToBytes(Bitmap bitmap, boolean gradient) {
         int
                 bitmapWidth = bitmap.getWidth(),
                 bitmapHeight = bitmap.getHeight(),
                 bytesByLine = (int) Math.ceil(((float) bitmapWidth) / 8f);
 
-        byte[] imageBytes = EscPosPrinterCommands.initGSv0Command(bytesByLine, bitmapHeight);
+        byte[] imageBytes = SharedPrinterCommand.initGSv0Command(bytesByLine, bitmapHeight);
 
         int i = 8,
                 greyscaleCoefficientInit = 0,
@@ -184,7 +175,7 @@ public class EscPosPrinterCommands {
                 imageBytesSize = 6 + bytesByLine * 24;
 
         byte[][] returnedBytes = new byte[imageLineHeightCount + 2][];
-        returnedBytes[0] = EscPosPrinterCommands.LINE_SPACING_24;
+        returnedBytes[0] = SharedPrinterCommand.LINE_SPACING_24;
         for (int i = 0; i < imageLineHeightCount; ++i) {
             int pxBaseRow = i * 24;
             byte[] imageBytes = new byte[imageBytesSize];
@@ -213,20 +204,14 @@ public class EscPosPrinterCommands {
                     }
                 }
             }
-            imageBytes[imageBytes.length - 1] = EscPosPrinterCommands.LF;
+            imageBytes[imageBytes.length - 1] = SharedPrinterCommand.LF;
             returnedBytes[i + 1] = imageBytes;
         }
-        returnedBytes[returnedBytes.length - 1] = EscPosPrinterCommands.LINE_SPACING_30;
+        returnedBytes[returnedBytes.length - 1] = SharedPrinterCommand.LINE_SPACING_30;
         return returnedBytes;
     }
 
-    /**
-     * Convert a string to QR Code byte array compatible with ESC/POS printer.
-     *
-     * @param data String data to convert in QR Code
-     * @param size QR code dots size
-     * @return Bytes contain the image in ESC/POS command
-     */
+
     public static byte[] QRCodeDataToBytes(String data, int size) throws EscPosBarcodeException {
 
         ByteMatrix byteMatrix = null;
@@ -244,7 +229,7 @@ public class EscPosPrinterCommands {
         }
 
         if (byteMatrix == null) {
-            return EscPosPrinterCommands.initGSv0Command(0, 0);
+            return SharedPrinterCommand.initGSv0Command(0, 0);
         }
 
         int
@@ -257,10 +242,10 @@ public class EscPosPrinterCommands {
                 i = 8;
 
         if (coefficient < 1) {
-            return EscPosPrinterCommands.initGSv0Command(0, 0);
+            return SharedPrinterCommand.initGSv0Command(0, 0);
         }
 
-        byte[] imageBytes = EscPosPrinterCommands.initGSv0Command(bytesByLine, imageHeight);
+        byte[] imageBytes = SharedPrinterCommand.initGSv0Command(bytesByLine, imageHeight);
 
         for (int y = 0; y < height; y++) {
             byte[] lineBytes = new byte[bytesByLine];
@@ -290,143 +275,28 @@ public class EscPosPrinterCommands {
         return imageBytes;
     }
 
-    /**
-     * Create new instance of EscPosPrinterCommands.
-     *
-     * @param printerConnection an instance of a class which implement DeviceConnection
-     */
-    public EscPosPrinterCommands(DeviceConnection printerConnection) {
-        this(printerConnection, null);
-    }
 
-    /**
-     * Create new instance of EscPosPrinterCommands.
-     *
-     * @param printerConnection an instance of a class which implement DeviceConnection
-     * @param charsetEncoding   Set the charset encoding.
-     */
-    public EscPosPrinterCommands(DeviceConnection printerConnection, EscPosCharsetEncoding charsetEncoding) {
-        byteArrayList = new ArrayList<>();
-        this.printerConnection = printerConnection;
+    public SharedPrinterCommand(EscPosCharsetEncoding charsetEncoding, PrinterShare printerShare) {
+
         this.charsetEncoding = charsetEncoding != null ? charsetEncoding : new EscPosCharsetEncoding("windows-1252", 6);
+        byteArrayList = new ArrayList<>();
+        this.printerShare = printerShare;
     }
 
-    /**
-     * Start socket connection and open stream with the device.
-     */
-    public EscPosPrinterCommands connect() throws EscPosConnectionException {
-        this.printerConnection.connect();
+
+    public SharedPrinterCommand connect() throws EscPosConnectionException {
+        //  this.printerConnection.connect();
         return this;
     }
 
-    /**
-     * Close the socket connection and stream with the device.
-     */
-    public void disconnect() {
-        this.printerConnection.disconnect();
-    }
 
-    /**
-     * Reset printers parameters.
-     */
-    public EscPosPrinterCommands reset() {
-        if (!this.printerConnection.isConnected()) {
+    public SharedPrinterCommand setAlign(byte[] align) {
+       /* if (!this.printerConnection.isConnected()) {
             return this;
-        }
-        this.printerConnection.write(EscPosPrinterCommands.RESET_PRINTER);
-        return this;
-    }
-
-    /**
-     * Set the alignment of text and barcodes.
-     * Don't works with image.
-     *
-     * @param align Set the alignment of text and barcodes. Use EscPosPrinterCommands.TEXT_ALIGN_... constants
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands setAlign(byte[] align) {
-        if (!this.printerConnection.isConnected()) {
-            return this;
-        }
-        this.printerConnection.write(align);
-
+        }*/
+        //  this.printerConnection.write(align);
         byteArrayList.add(align);
         return this;
-    }
-
-    /**
-     * Print text with the connected printer.
-     *
-     * @param text Text to be printed
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printText(String text) throws EscPosEncodingException {
-        return this.printText(text, null);
-    }
-
-    /**
-     * Print text with the connected printer.
-     *
-     * @param text     Text to be printed
-     * @param textSize Set the text size. Use EscPosPrinterCommands.TEXT_SIZE_... constants
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printText(String text, byte[] textSize) throws EscPosEncodingException {
-        return this.printText(text, textSize, null);
-    }
-
-    /**
-     * Print text with the connected printer.
-     *
-     * @param text      Text to be printed
-     * @param textSize  Set the text size. Use EscPosPrinterCommands.TEXT_SIZE_... constants
-     * @param textColor Set the text color. Use EscPosPrinterCommands.TEXT_COLOR_... constants
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printText(String text, byte[] textSize, byte[] textColor) throws EscPosEncodingException {
-        return this.printText(text, textSize, textColor, null);
-    }
-
-    /**
-     * Print text with the connected printer.
-     *
-     * @param text             Text to be printed
-     * @param textSize         Set the text size. Use EscPosPrinterCommands.TEXT_SIZE_... constants
-     * @param textColor        Set the text color. Use EscPosPrinterCommands.TEXT_COLOR_... constants
-     * @param textReverseColor Set the background and text color. Use EscPosPrinterCommands.TEXT_COLOR_REVERSE_... constants
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printText(String text, byte[] textSize, byte[] textColor, byte[] textReverseColor) throws EscPosEncodingException {
-        return this.printText(text, textSize, textColor, textReverseColor, null);
-    }
-
-    /**
-     * Print text with the connected printer.
-     *
-     * @param text             Text to be printed
-     * @param textSize         Set the text size. Use EscPosPrinterCommands.TEXT_SIZE_... constants
-     * @param textColor        Set the text color. Use EscPosPrinterCommands.TEXT_COLOR_... constants
-     * @param textReverseColor Set the background and text color. Use EscPosPrinterCommands.TEXT_COLOR_REVERSE_... constants
-     * @param textBold         Set the text weight. Use EscPosPrinterCommands.TEXT_WEIGHT_... constants
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printText(String text, byte[] textSize, byte[] textColor, byte[] textReverseColor, byte[] textBold) throws EscPosEncodingException {
-        return this.printText(text, textSize, textColor, textReverseColor, textBold, null);
-    }
-
-    /**
-     * Print text with the connected printer.
-     *
-     * @param text             Text to be printed
-     * @param textSize         Set the text size. Use EscPosPrinterCommands.TEXT_SIZE_... constants
-     * @param textColor        Set the text color. Use EscPosPrinterCommands.TEXT_COLOR_... constants
-     * @param textReverseColor Set the background and text color. Use EscPosPrinterCommands.TEXT_COLOR_REVERSE_... constants
-     * @param textBold         Set the text weight. Use EscPosPrinterCommands.TEXT_WEIGHT_... constants
-     * @param textUnderline    Set the underlining of the text. Use EscPosPrinterCommands.TEXT_UNDERLINE_... constants
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printText(String text, byte[] textSize, byte[] textColor, byte[] textReverseColor, byte[] textBold, byte[] textUnderline) throws EscPosEncodingException {
-        return this.printText(text, textSize, textColor, textReverseColor, textBold, textUnderline, null);
     }
 
 
@@ -437,125 +307,105 @@ public class EscPosPrinterCommands {
     private byte[] currentTextUnderline = new byte[0];
     private byte[] currentTextDoubleStrike = new byte[0];
 
-    // FIXME: 1/23/25
 
-    public EscPosPrinterCommands printText(String text, int a){
-        byte[] command = {
-                0x1D, 0x68, 0x28,
-                0x1D, 0x6B, 0x49,        // GS K 73
-                0x0C,                    // Number of data bytes: 10 (decimal 10 is 0x0A)
-                0x7B, 0x42, 0x31, 0x32, 0x33, 0x34,  // 1234
-                0x35, 0x36, 0x37, 0x38,  // 5678
-                0x39, 0x30     //H  // Data: Control characters
-        };
-        this.printerConnection.write(this.charsetEncoding.getCommand());
-        this.printerConnection.write(command);
-        return this;
-    }
+    public SharedPrinterCommand printText(String text, byte[] textSize, byte[] textColor, byte[] textReverseColor, byte[] textBold, byte[] textUnderline, byte[] textDoubleStrike) throws EscPosEncodingException {
 
-    /**
-     * Print text with the connected printer.
-     *
-     * @param text             Text to be printed
-     * @param textSize         Set the text size. Use EscPosPrinterCommands.TEXT_SIZE_... constants
-     * @param textColor        Set the text color. Use EscPosPrinterCommands.TEXT_COLOR_... constants
-     * @param textReverseColor Set the background and text color. Use EscPosPrinterCommands.TEXT_COLOR_REVERSE_... constants
-     * @param textBold         Set the text weight. Use EscPosPrinterCommands.TEXT_WEIGHT_... constants
-     * @param textUnderline    Set the underlining of the text. Use EscPosPrinterCommands.TEXT_UNDERLINE_... constants
-     * @param textDoubleStrike Set the double strike of the text. Use EscPosPrinterCommands.TEXT_DOUBLE_STRIKE_... constants
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printText(String text, byte[] textSize, byte[] textColor, byte[] textReverseColor, byte[] textBold, byte[] textUnderline, byte[] textDoubleStrike) throws EscPosEncodingException {
-
-        if (!this.printerConnection.isConnected()) {
-            return this;
-        }
 
         if (textSize == null) {
-            textSize = EscPosPrinterCommands.TEXT_SIZE_NORMAL;
+            textSize = SharedPrinterCommand.TEXT_SIZE_NORMAL;
         }
         if (textColor == null) {
-            textColor = EscPosPrinterCommands.TEXT_COLOR_BLACK;
+            textColor = SharedPrinterCommand.TEXT_COLOR_BLACK;
         }
         if (textReverseColor == null) {
-            textReverseColor = EscPosPrinterCommands.TEXT_COLOR_REVERSE_OFF;
+            textReverseColor = SharedPrinterCommand.TEXT_COLOR_REVERSE_OFF;
         }
         if (textBold == null) {
-            textBold = EscPosPrinterCommands.TEXT_WEIGHT_NORMAL;
+            textBold = SharedPrinterCommand.TEXT_WEIGHT_NORMAL;
         }
         if (textUnderline == null) {
-            textUnderline = EscPosPrinterCommands.TEXT_UNDERLINE_OFF;
+            textUnderline = SharedPrinterCommand.TEXT_UNDERLINE_OFF;
         }
         if (textDoubleStrike == null) {
-            textDoubleStrike = EscPosPrinterCommands.TEXT_DOUBLE_STRIKE_OFF;
+            textDoubleStrike = SharedPrinterCommand.TEXT_DOUBLE_STRIKE_OFF;
         }
 
         try {
             byte[] textBytes = text.getBytes(this.charsetEncoding.getName());
-           //.  this.printerConnection.write(this.charsetEncoding.getCommand());
+            //   this.printerConnection.write(this.charsetEncoding.getCommand());
             //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
 
 
             if (!Arrays.equals(this.currentTextSize, textSize)) {
-         //       this.printerConnection.write(textSize);
+                // this.printerConnection.write(textSize);
                 this.currentTextSize = textSize;
+                //  byteArrayList.add(textSize);
+
             }
 
             if (!Arrays.equals(this.currentTextDoubleStrike, textDoubleStrike)) {
-        ///        this.printerConnection.write(textDoubleStrike);
+                //      this.printerConnection.write(textDoubleStrike);
                 this.currentTextDoubleStrike = textDoubleStrike;
+                //   byteArrayList.add(textDoubleStrike);
             }
 
             if (!Arrays.equals(this.currentTextUnderline, textUnderline)) {
-         //       this.printerConnection.write(textUnderline);
+                //    this.printerConnection.write(textUnderline);
                 this.currentTextUnderline = textUnderline;
+                //  byteArrayList.add(textUnderline);
+
             }
 
             if (!Arrays.equals(this.currentTextBold, textBold)) {
-        //        this.printerConnection.write(textBold);
+                //  this.printerConnection.write(textBold);
                 this.currentTextBold = textBold;
+                // byteArrayList.add(textBold);
             }
 
             if (!Arrays.equals(this.currentTextColor, textColor)) {
-         //       this.printerConnection.write(textColor);
+                //    this.printerConnection.write(textColor);
                 this.currentTextColor = textColor;
+                // byteArrayList.add(textColor);
             }
 
             if (!Arrays.equals(this.currentTextReverseColor, textReverseColor)) {
-                this.printerConnection.write(textReverseColor);
+                //     this.printerConnection.write(textReverseColor);
+                byteArrayList.add(textReverseColor);
                 this.currentTextReverseColor = textReverseColor;
             }
-       //     this.printerConnection.write(textBytes);
+            // Log.d("Log404", "byte :  " + bytesToHex(textBytes));
+
+            //    this.printerConnection.write(textBytes);
+
+          /*  ByteArrayInputStream data = new ByteArrayInputStream(textBytes);
+            InputStream[] streams = {data};
+            SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
+            printerShare.print(fullStream);*/
             byteArrayList.add(textBytes);
-         //   this.printerConnection.write(textBytes);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             throw new EscPosEncodingException(e.getMessage());
         }
 
+
         return this;
     }
 
-    public EscPosPrinterCommands printAllCharsetsEncodingCharacters() {
-        for (int charsetId = 0; charsetId < 256; ++charsetId) {
-            this.printCharsetEncodingCharacters(charsetId);
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder hexString = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            hexString.append(String.format("0x%02X, ", b)); // Converts each byte to a two-character hex
         }
-        return this;
+        return hexString.toString();
     }
 
-    public EscPosPrinterCommands printCharsetsEncodingCharacters(int[] charsetsId) {
-        for (int charsetId : charsetsId) {
-            this.printCharsetEncodingCharacters(charsetId);
-        }
-        return this;
-    }
 
-    public EscPosPrinterCommands printCharsetEncodingCharacters(int charsetId) {
-        if (!this.printerConnection.isConnected()) {
+    public SharedPrinterCommand printCharsetEncodingCharacters(int charsetId) {
+       /* if (!this.printerConnection.isConnected()) {
             return this;
-        }
-
+        }*/
+/*
         try {
             this.printerConnection.write(new byte[]{0x1B, 0x74, (byte) charsetId});
             this.printerConnection.write(EscPosPrinterCommands.TEXT_SIZE_NORMAL);
@@ -587,67 +437,51 @@ public class EscPosPrinterCommands {
             this.printerConnection.send();
         } catch (EscPosConnectionException e) {
             e.printStackTrace();
-        }
+        }*/
         return this;
     }
 
 
-    /**
-     * Active "ESC *" command for image print.
-     *
-     * @param enable true to use "ESC *", false to use "GS v 0"
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands useEscAsteriskCommand(boolean enable) {
+    public SharedPrinterCommand useEscAsteriskCommand(boolean enable) {
         this.useEscAsteriskCommand = enable;
         return this;
     }
 
-    /**
-     * Print image with the connected printer.
-     *
-     * @param image Bytes contain the image in ESC/POS command
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printImage(byte[] image) throws EscPosConnectionException {
-        if (!this.printerConnection.isConnected()) {
-            return this;
-        }
+    public SharedPrinterCommand printImage(byte[] image) throws EscPosConnectionException {
 
-        byte[][] bytesToPrint = this.useEscAsteriskCommand ? EscPosPrinterCommands.convertGSv0ToEscAsterisk(image) : new byte[][]{image};
+        // this.useEscAsteriskCommand = false;
 
+        byte[][] bytesToPrint = this.useEscAsteriskCommand ? SharedPrinterCommand.convertGSv0ToEscAsterisk(image) : new byte[][]{image};
+        // byteArrayList.add( new byte[]{0x0A});
         for (byte[] bytes : bytesToPrint) {
-           // this.printerConnection.write(bytes);
+            // this.printerConnection.write(bytes);
+            //
+
             byteArrayList.add(bytes);
-            this.printerConnection.send();
+            // this.printerConnection.send();
+            //  printerShare.print(new ByteArrayInputStream(bytes));
         }
 
         return this;
     }
 
-    /**
-     * Print a barcode with the connected printer.
-     *
-     * @param barcode Instance of Class that implement Barcode
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printBarcode(Barcode barcode) {
-        if (!this.printerConnection.isConnected()) {
-            return this;
-        }
+
+    public SharedPrinterCommand printBarcode(Barcode barcode) {
 
         String code = barcode.getCode();
         int barcodeLength = barcode.getCodeLength();
         byte[] barcodeCommand = new byte[barcodeLength + 6];
         //  0x7B, 0x42,
-        if(barcode.getBarcodeType() == EscPosPrinterCommands.BARCODE_TYPE_128){
+        Log.d("Log04", " got the barcode ");
+        if (barcode.getBarcodeType() == SharedPrinterCommand.BARCODE_TYPE_128) {
+            Log.d("Log04", " got the barcode 128");
             barcodeCommand = new byte[barcodeLength + 6];
-            System.arraycopy(new byte[]{0x1D, 0x6B, (byte) barcode.getBarcodeType(), (byte) (barcodeLength+2),0x7B, 0x42}, 0, barcodeCommand, 0, 6);
+            System.arraycopy(new byte[]{0x1D, 0x6B, (byte) barcode.getBarcodeType(), (byte) (barcodeLength + 2), 0x7B, 0x42}, 0, barcodeCommand, 0, 6);
             for (int i = 0; i < barcodeLength; i++) {
                 barcodeCommand[i + 6] = (byte) code.charAt(i);
             }
 
-        }else {
+        } else {
             barcodeCommand = new byte[barcodeLength + 4];
             System.arraycopy(new byte[]{0x1D, 0x6B, (byte) barcode.getBarcodeType(), (byte) barcodeLength}, 0, barcodeCommand, 0, 4);
             for (int i = 0; i < barcodeLength; i++) {
@@ -655,193 +489,97 @@ public class EscPosPrinterCommands {
             }
         }
 
-        /*byte[] command = {
-                0x1D, 0x68, 0x28,
-                0x1D, 0x6B, 0x49,        // GS K 73
-                0x0A,                    // Number of data bytes: 10 (decimal 10 is 0x0A)
-                0x7B, 0x42, 0x58,  // X
-                0x52,  // R
-                0x48,  // H
-                0x52,  // R
-                0x38,  // 8
-                0x30,  // 0
-                0x37,  // 7
-                0x35,  // 5
-                0x49,  // I
-                0x48      // Data: Control characters
-        };*/
 
-
-        this.printerConnection.write(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
+       /* this.printerConnection.write(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
         this.printerConnection.write(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
-        this.printerConnection.write(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});
-        this.printerConnection.write(barcodeCommand);
+        this.printerConnection.write(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});*/
+        //  this.printerConnection.write(barcodeCommand);
+/*        byteArrayList.add(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
+        byteArrayList.add(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
+        byteArrayList.add(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});*/
+
+        byteArrayList.add(new byte[]{0x0A});
+        byteArrayList.add(barcodeCommand);
+
+
+      /*  printerShare.print(new ByteArrayInputStream(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()}));
+        printerShare.print(new ByteArrayInputStream(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()}));
+        printerShare.print(new ByteArrayInputStream(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()}));
+        printerShare.print(new ByteArrayInputStream(barcodeCommand));*/
+
         return this;
     }
 
-
-    /**
-     * Print a QR code with the connected printer.
-     *
-     * @param qrCodeType Set the barcode type. Use EscPosPrinterCommands.QRCODE_... constants
-     * @param text       String that contains QR code data
-     * @param size       dot size of QR code pixel
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands printQRCode(int qrCodeType, String text, int size) throws EscPosEncodingException {
-        if (!this.printerConnection.isConnected()) {
-            return this;
-        }
-
-        if (size < 1) {
-            size = 1;
-        } else if (size > 16) {
-            size = 16;
-        }
-
-
-        try {
-            byte[] textBytes = text.getBytes("UTF-8");
-
-            int
-                    commandLength = textBytes.length + 3,
-                    pL = commandLength % 256,
-                    pH = commandLength / 256;
-
-            /*byte[] qrCodeCommand = new byte[textBytes.length + 7];
-            System.arraycopy(new byte[]{0x1B, 0x5A, 0x00, 0x00, (byte)size, (byte)pL, (byte)pH}, 0, qrCodeCommand, 0, 7);
-            System.arraycopy(textBytes, 0, qrCodeCommand, 7, textBytes.length);
-            this.printerConnection.write(qrCodeCommand);*/
-
-            this.printerConnection.write(new byte[]{0x1D, 0x28, 0x6B, 0x04, 0x00, 0x31, 0x41, (byte) qrCodeType, 0x00});
-            this.printerConnection.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, (byte) size});
-            this.printerConnection.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x30});
-
-            byte[] qrCodeCommand = new byte[textBytes.length + 8];
-            System.arraycopy(new byte[]{0x1D, 0x28, 0x6B, (byte) pL, (byte) pH, 0x31, 0x50, 0x30}, 0, qrCodeCommand, 0, 8);
-            System.arraycopy(textBytes, 0, qrCodeCommand, 8, textBytes.length);
-            this.printerConnection.write(qrCodeCommand);
-            this.printerConnection.write(new byte[]{0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30});
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            throw new EscPosEncodingException(e.getMessage());
-        }
+    public SharedPrinterCommand reset() {
+        //   printerShare.print(new ByteArrayInputStream(new byte[]{0x1B, 0x40}));
         return this;
     }
 
-    /**
-     * Forces the transition to a new line with the connected printer.
-     *
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands newLine() throws EscPosConnectionException {
+    public SharedPrinterCommand newLine() throws EscPosConnectionException {
         return this.newLine(null);
     }
 
-    /**
-     * Forces the transition to a new line and set the alignment of text and barcodes with the connected printer.
-     *
-     * @param align Set the alignment of text and barcodes. Use EscPosPrinterCommands.TEXT_ALIGN_... constants
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands newLine(byte[] align) throws EscPosConnectionException {
-        if (!this.printerConnection.isConnected()) {
+    public SharedPrinterCommand newLine(byte[] align) throws EscPosConnectionException {
+       /* if (!this.printerConnection.isConnected()) {
             return this;
-        }
+        }*/
 
-        this.printerConnection.write(new byte[]{EscPosPrinterCommands.LF});
-        this.printerConnection.send();
+        //  this.printerConnection.write(new byte[]{EscPosPrinterCommands.LF});
+        //  this.printerConnection.send();
+        byteArrayList.add(new byte[]{SharedPrinterCommand.LF});
 
         if (align != null) {
-            this.printerConnection.write(align);
+            //this.printerConnection.write(align);
+            byteArrayList.add(align);
         }
+
         return this;
     }
 
-    /**
-     * Feed the paper
-     *
-     * @param dots Number of dots to feed (0 <= dots <= 255)
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands feedPaper(int dots) throws EscPosConnectionException {
-        if (!this.printerConnection.isConnected()) {
-            return this;
-        }
+
+    public SharedPrinterCommand feedPaper(int dots) throws EscPosConnectionException {
+
 
         if (dots > 0) {
-            this.printerConnection.write(new byte[]{0x1B, 0x4A, (byte) dots});
-            this.printerConnection.send(dots);
+            //this.printerConnection.write(new byte[]{0x1B, 0x4A, (byte) dots});
+            byteArrayList.add(new byte[]{0x1B, 0x4A, (byte) dots});
         }
 
         return this;
     }
 
-    /**
-     * Cut the paper
-     *
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands cutPaper() throws EscPosConnectionException {
-        if (!this.printerConnection.isConnected()) {
+
+    public SharedPrinterCommand cutPaper() throws EscPosConnectionException {
+       /* if (!this.printerConnection.isConnected()) {
             return this;
-        }
+        }*/
 
-        this.printerConnection.write(new byte[]{0x1D, 0x56, 0x01});
-        this.printerConnection.send(100);
+        // this.printerConnection.write(new byte[]{0x1D, 0x56, 0x01});
+        //    this.printerConnection.send(100);
+
+        // FIXME: 2/19/25 add cut paper
+        // new byte[]{0x1B, 0x4A, (byte) dots}
         return this;
     }
 
-    /**
-     * Open the cash box
-     *
-     * @return Fluent interface
-     */
-    public EscPosPrinterCommands openCashBox() throws EscPosConnectionException {
-        if (!this.printerConnection.isConnected()) {
+
+    public SharedPrinterCommand openCashBox() throws EscPosConnectionException {
+       /* if (!this.printerConnection.isConnected()) {
             return this;
-        }
+        }*/
 
-        this.printerConnection.write(new byte[]{0x1B, 0x70, 0x00, 0x3C, (byte) 0xFF});
-        this.printerConnection.send(100);
+        //  this.printerConnection.write(new byte[]{0x1B, 0x70, 0x00, 0x3C, (byte) 0xFF});
+        //  this.printerConnection.send(100);
         return this;
     }
 
-    /**
-     * @return Charset encoding
-     */
+
     public EscPosCharsetEncoding getCharsetEncoding() {
         return this.charsetEncoding;
     }
 
-    public  void print(){
-       // byte[] messageByteArray = toPrimitive(byteArrayList);
-
-        for (byte[] bytes : byteArrayList){
-            this.printerConnection.write(bytes);
-        }
-
-
-    }
-
-    public static byte[] toPrimitive(List<byte[]> byteArrays) {
-        int totalSize = 0;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            totalSize = byteArrays.stream().mapToInt(arr -> arr.length).sum();
-        }
-
-        // Create a new byte array with total size
-        byte[] result = new byte[totalSize];
-
-        // Copy all byte[] elements into the result array
-        int index = 0;
-        for (byte[] array : byteArrays) {
-            System.arraycopy(array, 0, result, index, array.length);
-            index += array.length;
-        }
-
-        return result;
+    public List<byte[]> getByteArrayList() {
+        return byteArrayList;
     }
 }
 

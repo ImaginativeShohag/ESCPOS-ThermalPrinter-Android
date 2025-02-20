@@ -1,14 +1,14 @@
-package com.dantsu.escposprinter.textparser;
+package com.dantsu.escposprinter.sharedprint;
 
-import java.util.Arrays;
+import android.util.Log;
 
-import com.dantsu.escposprinter.EscPosPrinter;
 import com.dantsu.escposprinter.EscPosPrinterCommands;
 import com.dantsu.escposprinter.exceptions.EscPosBarcodeException;
 import com.dantsu.escposprinter.exceptions.EscPosEncodingException;
 import com.dantsu.escposprinter.exceptions.EscPosParserException;
+import com.dantsu.escposprinter.textparser.PrinterTextParser;
 
-public class PrinterTextParser {
+public class SharedPrintTextParser {
 
     public static final String TAGS_ALIGN_LEFT = "L";
     public static final String TAGS_ALIGN_CENTER = "C";
@@ -62,15 +62,16 @@ public class PrinterTextParser {
     public static final String ATTR_QRCODE_SIZE = "size";
 
     private static String regexAlignTags;
+
     public static String getRegexAlignTags() {
-        if(PrinterTextParser.regexAlignTags == null) {
+        if (SharedPrintTextParser.regexAlignTags == null) {
             StringBuilder regexAlignTags = new StringBuilder();
             for (int i = 0; i < PrinterTextParser.TAGS_ALIGN.length; i++) {
                 regexAlignTags.append("|\\[").append(PrinterTextParser.TAGS_ALIGN[i]).append("\\]");
             }
-            PrinterTextParser.regexAlignTags = regexAlignTags.toString().substring(1);
+            SharedPrintTextParser.regexAlignTags = regexAlignTags.toString().substring(1);
         }
-        return PrinterTextParser.regexAlignTags;
+        return SharedPrintTextParser.regexAlignTags;
     }
 
     public static boolean isTagTextFormat(String tagName) {
@@ -105,9 +106,7 @@ public class PrinterTextParser {
     }
 
 
-
-
-    private EscPosPrinter printer;
+    private SharedPrinterSize printer;
     private byte[][] textSize = {EscPosPrinterCommands.TEXT_SIZE_NORMAL};
     private byte[][] textColor = {EscPosPrinterCommands.TEXT_COLOR_BLACK};
     private byte[][] textReverseColor = {EscPosPrinterCommands.TEXT_COLOR_REVERSE_OFF};
@@ -116,15 +115,17 @@ public class PrinterTextParser {
     private byte[][] textDoubleStrike = {EscPosPrinterCommands.TEXT_DOUBLE_STRIKE_OFF};
     private String text = "";
 
-    public PrinterTextParser(EscPosPrinter printer) {
+    public SharedPrintTextParser(SharedPrinterSize printer) {
         this.printer = printer;
+
     }
 
-    public EscPosPrinter getPrinter() {
+
+    public SharedPrinterSize getPrinter() {
         return printer;
     }
 
-    public PrinterTextParser setFormattedText(String text) {
+    public SharedPrintTextParser setFormattedText(String text) {
         this.text = text;
         return this;
     }
@@ -133,12 +134,12 @@ public class PrinterTextParser {
         return this.textSize[this.textSize.length - 1];
     }
 
-    public PrinterTextParser addTextSize(byte[] newTextSize) {
+    public SharedPrintTextParser addTextSize(byte[] newTextSize) {
         this.textSize = PrinterTextParser.arrayBytePush(this.textSize, newTextSize);
         return this;
     }
 
-    public PrinterTextParser dropLastTextSize() {
+    public SharedPrintTextParser dropLastTextSize() {
         if (this.textSize.length > 1) {
             this.textSize = PrinterTextParser.arrayByteDropLast(this.textSize);
         }
@@ -149,12 +150,12 @@ public class PrinterTextParser {
         return this.textColor[this.textColor.length - 1];
     }
 
-    public PrinterTextParser addTextColor(byte[] newTextColor) {
+    public SharedPrintTextParser addTextColor(byte[] newTextColor) {
         this.textColor = PrinterTextParser.arrayBytePush(this.textColor, newTextColor);
         return this;
     }
 
-    public PrinterTextParser dropLastTextColor() {
+    public SharedPrintTextParser dropLastTextColor() {
         if (this.textColor.length > 1) {
             this.textColor = PrinterTextParser.arrayByteDropLast(this.textColor);
         }
@@ -165,12 +166,12 @@ public class PrinterTextParser {
         return this.textReverseColor[this.textReverseColor.length - 1];
     }
 
-    public PrinterTextParser addTextReverseColor(byte[] newTextReverseColor) {
+    public SharedPrintTextParser addTextReverseColor(byte[] newTextReverseColor) {
         this.textReverseColor = PrinterTextParser.arrayBytePush(this.textReverseColor, newTextReverseColor);
         return this;
     }
 
-    public PrinterTextParser dropLastTextReverseColor() {
+    public SharedPrintTextParser dropLastTextReverseColor() {
         if (this.textReverseColor.length > 1) {
             this.textReverseColor = PrinterTextParser.arrayByteDropLast(this.textReverseColor);
         }
@@ -181,12 +182,12 @@ public class PrinterTextParser {
         return this.textBold[this.textBold.length - 1];
     }
 
-    public PrinterTextParser addTextBold(byte[] newTextBold) {
+    public SharedPrintTextParser addTextBold(byte[] newTextBold) {
         this.textBold = PrinterTextParser.arrayBytePush(this.textBold, newTextBold);
         return this;
     }
 
-    public PrinterTextParser dropTextBold() {
+    public SharedPrintTextParser dropTextBold() {
         if (this.textBold.length > 1) {
             this.textBold = PrinterTextParser.arrayByteDropLast(this.textBold);
         }
@@ -197,12 +198,12 @@ public class PrinterTextParser {
         return this.textUnderline[this.textUnderline.length - 1];
     }
 
-    public PrinterTextParser addTextUnderline(byte[] newTextUnderline) {
+    public SharedPrintTextParser addTextUnderline(byte[] newTextUnderline) {
         this.textUnderline = PrinterTextParser.arrayBytePush(this.textUnderline, newTextUnderline);
         return this;
     }
 
-    public PrinterTextParser dropLastTextUnderline() {
+    public SharedPrintTextParser dropLastTextUnderline() {
         if (this.textUnderline.length > 1) {
             this.textUnderline = PrinterTextParser.arrayByteDropLast(this.textUnderline);
         }
@@ -213,24 +214,25 @@ public class PrinterTextParser {
         return this.textDoubleStrike[this.textDoubleStrike.length - 1];
     }
 
-    public PrinterTextParser addTextDoubleStrike(byte[] newTextDoubleStrike) {
+    public SharedPrintTextParser addTextDoubleStrike(byte[] newTextDoubleStrike) {
         this.textDoubleStrike = PrinterTextParser.arrayBytePush(this.textDoubleStrike, newTextDoubleStrike);
         return this;
     }
 
-    public PrinterTextParser dropLastTextDoubleStrike() {
+    public SharedPrintTextParser dropLastTextDoubleStrike() {
         if (this.textDoubleStrike.length > 1) {
             this.textDoubleStrike = PrinterTextParser.arrayByteDropLast(this.textDoubleStrike);
         }
         return this;
     }
 
-    public PrinterTextParserLine[] parse() throws EscPosParserException, EscPosBarcodeException, EscPosEncodingException {
+    public SharedPrinterTextParserLine[] parse() throws EscPosParserException, EscPosBarcodeException, EscPosEncodingException {
         String[] stringLines = this.text.split("\n|\r\n");
-        PrinterTextParserLine[] lines = new PrinterTextParserLine[stringLines.length];
+        SharedPrinterTextParserLine[] lines = new SharedPrinterTextParserLine[stringLines.length];
         int i = 0;
         for (String line : stringLines) {
-            lines[i++] = new PrinterTextParserLine(this, line);
+            Log.d("Log404", "printing2 :   " + line);
+            lines[i++] = new SharedPrinterTextParserLine(this, line);
         }
         return lines;
     }

@@ -1,42 +1,41 @@
-package com.dantsu.escposprinter.textparser;
+package com.dantsu.escposprinter.sharedprint;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
-import com.dantsu.escposprinter.EscPosPrinter;
-import com.dantsu.escposprinter.EscPosPrinterCommands;
 import com.dantsu.escposprinter.EscPosPrinterSize;
 import com.dantsu.escposprinter.exceptions.EscPosConnectionException;
 import com.dantsu.escposprinter.exceptions.EscPosEncodingException;
+import com.dantsu.escposprinter.textparser.PrinterTextParser;
 
-
-public class PrinterTextParserImg implements IPrinterTextParserElement {
+public class SharedPrinterTextParserImg implements ISharedPrinterTextParserElement {
 
     /**
      * Convert Drawable instance to a hexadecimal string of the image data.
      *
      * @param printerSize A EscPosPrinterSize instance that will print the image.
-     * @param drawable Drawable instance to be converted.
+     * @param drawable    Drawable instance to be converted.
      * @return A hexadecimal string of the image data. Empty string if Drawable cannot be cast to BitmapDrawable.
      */
     public static String bitmapToHexadecimalString(EscPosPrinterSize printerSize, Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
-            return PrinterTextParserImg.bitmapToHexadecimalString(printerSize, (BitmapDrawable) drawable);
+            return SharedPrinterTextParserImg.bitmapToHexadecimalString(printerSize, (BitmapDrawable) drawable);
         }
         return "";
     }
+
     /**
      * Convert Drawable instance to a hexadecimal string of the image data.
      *
      * @param printerSize A EscPosPrinterSize instance that will print the image.
-     * @param drawable Drawable instance to be converted.
-     * @param gradient false : Black and white image, true : Grayscale image
+     * @param drawable    Drawable instance to be converted.
+     * @param gradient    false : Black and white image, true : Grayscale image
      * @return A hexadecimal string of the image data. Empty string if Drawable cannot be cast to BitmapDrawable.
      */
     public static String bitmapToHexadecimalString(EscPosPrinterSize printerSize, Drawable drawable, boolean gradient) {
         if (drawable instanceof BitmapDrawable) {
-            return PrinterTextParserImg.bitmapToHexadecimalString(printerSize, (BitmapDrawable) drawable, gradient);
+            return SharedPrinterTextParserImg.bitmapToHexadecimalString(printerSize, (BitmapDrawable) drawable, gradient);
         }
         return "";
     }
@@ -44,47 +43,47 @@ public class PrinterTextParserImg implements IPrinterTextParserElement {
     /**
      * Convert BitmapDrawable instance to a hexadecimal string of the image data.
      *
-     * @param printerSize A EscPosPrinterSize instance that will print the image.
+     * @param printerSize    A EscPosPrinterSize instance that will print the image.
      * @param bitmapDrawable BitmapDrawable instance to be converted.
      * @return A hexadecimal string of the image data.
      */
     public static String bitmapToHexadecimalString(EscPosPrinterSize printerSize, BitmapDrawable bitmapDrawable) {
-        return PrinterTextParserImg.bitmapToHexadecimalString(printerSize, bitmapDrawable.getBitmap());
+        return SharedPrinterTextParserImg.bitmapToHexadecimalString(printerSize, bitmapDrawable.getBitmap());
     }
 
     /**
      * Convert BitmapDrawable instance to a hexadecimal string of the image data.
      *
-     * @param printerSize A EscPosPrinterSize instance that will print the image.
+     * @param printerSize    A EscPosPrinterSize instance that will print the image.
      * @param bitmapDrawable BitmapDrawable instance to be converted.
-     * @param gradient false : Black and white image, true : Grayscale image
+     * @param gradient       false : Black and white image, true : Grayscale image
      * @return A hexadecimal string of the image data.
      */
     public static String bitmapToHexadecimalString(EscPosPrinterSize printerSize, BitmapDrawable bitmapDrawable, boolean gradient) {
-        return PrinterTextParserImg.bitmapToHexadecimalString(printerSize, bitmapDrawable.getBitmap(), gradient);
+        return SharedPrinterTextParserImg.bitmapToHexadecimalString(printerSize, bitmapDrawable.getBitmap(), gradient);
     }
 
     /**
      * Convert Bitmap instance to a hexadecimal string of the image data.
      *
      * @param printerSize A EscPosPrinterSize instance that will print the image.
-     * @param bitmap Bitmap instance to be converted.
+     * @param bitmap      Bitmap instance to be converted.
      * @return A hexadecimal string of the image data.
      */
     public static String bitmapToHexadecimalString(EscPosPrinterSize printerSize, Bitmap bitmap) {
-        return PrinterTextParserImg.bitmapToHexadecimalString(printerSize, bitmap, true);
+        return SharedPrinterTextParserImg.bitmapToHexadecimalString(printerSize, bitmap, true);
     }
 
     /**
      * Convert Bitmap instance to a hexadecimal string of the image data.
      *
      * @param printerSize A EscPosPrinterSize instance that will print the image.
-     * @param bitmap Bitmap instance to be converted.
-     * @param gradient false : Black and white image, true : Grayscale image
+     * @param bitmap      Bitmap instance to be converted.
+     * @param gradient    false : Black and white image, true : Grayscale image
      * @return A hexadecimal string of the image data.
      */
     public static String bitmapToHexadecimalString(EscPosPrinterSize printerSize, Bitmap bitmap, boolean gradient) {
-        return PrinterTextParserImg.bytesToHexadecimalString(printerSize.bitmapToBytes(bitmap, gradient));
+        return com.dantsu.escposprinter.textparser.PrinterTextParserImg.bytesToHexadecimalString(printerSize.bitmapToBytes(bitmap, gradient));
     }
 
     /**
@@ -128,22 +127,22 @@ public class PrinterTextParserImg implements IPrinterTextParserElement {
      * Create new instance of PrinterTextParserImg.
      *
      * @param printerTextParserColumn Parent PrinterTextParserColumn instance.
-     * @param textAlign Set the image alignment. Use PrinterTextParser.TAGS_ALIGN_... constants.
-     * @param hexadecimalString Hexadecimal string of the image data.
+     * @param textAlign               Set the image alignment. Use PrinterTextParser.TAGS_ALIGN_... constants.
+     * @param hexadecimalString       Hexadecimal string of the image data.
      */
-    public PrinterTextParserImg(PrinterTextParserColumn printerTextParserColumn, String textAlign, String hexadecimalString) {
-        this(printerTextParserColumn, textAlign, PrinterTextParserImg.hexadecimalStringToBytes(hexadecimalString));
+    public SharedPrinterTextParserImg(SharedPrinterTextColumn printerTextParserColumn, String textAlign, String hexadecimalString) {
+        this(printerTextParserColumn, textAlign, SharedPrinterTextParserImg.hexadecimalStringToBytes(hexadecimalString));
     }
 
     /**
      * Create new instance of PrinterTextParserImg.
      *
      * @param printerTextParserColumn Parent PrinterTextParserColumn instance.
-     * @param textAlign Set the image alignment. Use PrinterTextParser.TAGS_ALIGN_... constants.
-     * @param image Bytes contain the image in ESC/POS command.
+     * @param textAlign               Set the image alignment. Use PrinterTextParser.TAGS_ALIGN_... constants.
+     * @param image                   Bytes contain the image in ESC/POS command.
      */
-    public PrinterTextParserImg(PrinterTextParserColumn printerTextParserColumn, String textAlign, byte[] image) {
-        EscPosPrinter printer = printerTextParserColumn.getLine().getTextParser().getPrinter();
+    public SharedPrinterTextParserImg(SharedPrinterTextColumn printerTextParserColumn, String textAlign, byte[] image) {
+        EscPosPrinterSize printer = printerTextParserColumn.getLine().getTextParser().getPrinter();
 
         int
                 byteWidth = ((int) image[4] & 0xFF) + ((int) image[5] & 0xFF) * 256,
@@ -163,7 +162,7 @@ public class PrinterTextParserImg implements IPrinterTextParserElement {
 
         if (nbrWhiteByteToInsert > 0) {
             int newByteWidth = byteWidth + nbrWhiteByteToInsert;
-            byte[] newImage = EscPosPrinterCommands.initGSv0Command(newByteWidth, height);
+            byte[] newImage = SharedPrinterCommand.initGSv0Command(newByteWidth, height);
             for (int i = 0; i < height; i++) {
                 System.arraycopy(image, (byteWidth * i + 8), newImage, (newByteWidth * i + nbrWhiteByteToInsert + 8), byteWidth);
             }
@@ -191,7 +190,7 @@ public class PrinterTextParserImg implements IPrinterTextParserElement {
      * @return this Fluent method
      */
     @Override
-    public PrinterTextParserImg print(EscPosPrinterCommands printerSocket) throws EscPosConnectionException {
+    public SharedPrinterTextParserImg print(SharedPrinterCommand printerSocket) throws EscPosConnectionException {
         printerSocket.printImage(this.image);
         return this;
     }

@@ -1,25 +1,31 @@
-package com.dantsu.escposprinter;
-
+package com.dantsu.escposprinter.sharedprint;
 
 import android.graphics.Bitmap;
 
-public abstract class EscPosPrinterSize {
+import com.dantsu.escposprinter.EscPosCharsetEncoding;
+import com.dantsu.escposprinter.EscPosPrinterCommands;
+import com.dantsu.escposprinter.EscPosPrinterSize;
 
+public class SharedPrinterSize extends EscPosPrinterSize{
     public static final float INCH_TO_MM = 25.4f;
 
-    protected int printerDpi = 203;
-    protected float printerWidthMM = 88f;
-    protected int printerNbrCharactersPerLine = 64;
-    protected int printerWidthPx;
-    protected int printerCharSizeWidthPx;
+    private int printerDpi = 203;
+    private float printerWidthMM = 88f;
+    private int printerNbrCharactersPerLine = 64;
+    private int printerWidthPx;
+    private int printerCharSizeWidthPx;
+    private EscPosCharsetEncoding charsetEncoding;
 
-    protected EscPosPrinterSize(int printerDpi, float printerWidthMM, int printerNbrCharactersPerLine) {
+    public SharedPrinterSize(int printerDpi, float printerWidthMM, int printerNbrCharactersPerLine, EscPosCharsetEncoding charsetEncoding) {
+        super(printerDpi, printerWidthMM, printerNbrCharactersPerLine);
         this.printerDpi = printerDpi;
         this.printerWidthMM = printerWidthMM;
         this.printerNbrCharactersPerLine = printerNbrCharactersPerLine;
         int printingWidthPx = this.mmToPx(this.printerWidthMM);
         this.printerWidthPx = printingWidthPx + (printingWidthPx % 8);
         this.printerCharSizeWidthPx = printingWidthPx / this.printerNbrCharactersPerLine;
+        this.charsetEncoding = charsetEncoding;
+
     }
 
     /**
@@ -77,11 +83,15 @@ public abstract class EscPosPrinterSize {
         return Math.round(mmSize * ((float) this.printerDpi) / EscPosPrinterSize.INCH_TO_MM);
     }
 
+    public EscPosCharsetEncoding getEncoding() {
+        return this.charsetEncoding;
+    }
+
 
     /**
      * Convert Bitmap object to ESC/POS image.
      *
-     * @param bitmap Instance of Bitmap
+     * @param bitmap   Instance of Bitmap
      * @param gradient false : Black and white image, true : Grayscale image
      * @return Bytes contain the image in ESC/POS command
      */
@@ -107,6 +117,6 @@ public abstract class EscPosPrinterSize {
             bitmap = Bitmap.createScaledBitmap(bitmap, bitmapWidth, bitmapHeight, true);
         }
 
-        return EscPosPrinterCommands.bitmapToBytes(bitmap, gradient);
+        return SharedPrinterCommand.bitmapToBytes(bitmap, gradient);
     }
 }
