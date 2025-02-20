@@ -370,7 +370,7 @@ public class SharedPrinterCommand {
 
             if (!Arrays.equals(this.currentTextReverseColor, textReverseColor)) {
                 //     this.printerConnection.write(textReverseColor);
-                byteArrayList.add(textReverseColor);
+              //  byteArrayList.add(textReverseColor);
                 this.currentTextReverseColor = textReverseColor;
             }
             // Log.d("Log404", "byte :  " + bytesToHex(textBytes));
@@ -381,7 +381,7 @@ public class SharedPrinterCommand {
             InputStream[] streams = {data};
             SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
             printerShare.print(fullStream);*/
-            byteArrayList.add(textBytes);
+         //   byteArrayList.add(textBytes);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -457,7 +457,7 @@ public class SharedPrinterCommand {
             // this.printerConnection.write(bytes);
             //
 
-            byteArrayList.add(bytes);
+         //   byteArrayList.add(bytes);
             // this.printerConnection.send();
             //  printerShare.print(new ByteArrayInputStream(bytes));
         }
@@ -498,7 +498,8 @@ public class SharedPrinterCommand {
         byteArrayList.add(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
         byteArrayList.add(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});*/
 
-        byteArrayList.add(new byte[]{0x0A});
+       /* byteArrayList.add(new byte[]{0x0A});
+        */
         byteArrayList.add(barcodeCommand);
 
 

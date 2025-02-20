@@ -2,7 +2,6 @@ package com.dantsu.escposprinter;
 
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.util.Log;
 
 import com.dantsu.escposprinter.barcode.Barcode;
 import com.dantsu.escposprinter.connection.DeviceConnection;
@@ -87,7 +86,6 @@ public class EscPosPrinterCommands {
     private EscPosCharsetEncoding charsetEncoding;
     private boolean useEscAsteriskCommand;
     private final List<byte[]> byteArrayList;
-
 
 
     public static byte[] initGSv0Command(int bytesByLine, int bitmapHeight) {
@@ -439,7 +437,7 @@ public class EscPosPrinterCommands {
 
     // FIXME: 1/23/25
 
-    public EscPosPrinterCommands printText(String text, int a){
+    public EscPosPrinterCommands printText(String text, int a) {
         byte[] command = {
                 0x1D, 0x68, 0x28,
                 0x1D, 0x6B, 0x49,        // GS K 73
@@ -492,32 +490,32 @@ public class EscPosPrinterCommands {
 
         try {
             byte[] textBytes = text.getBytes(this.charsetEncoding.getName());
-           //.  this.printerConnection.write(this.charsetEncoding.getCommand());
+            //.  this.printerConnection.write(this.charsetEncoding.getCommand());
             //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
 
 
             if (!Arrays.equals(this.currentTextSize, textSize)) {
-         //       this.printerConnection.write(textSize);
+                //       this.printerConnection.write(textSize);
                 this.currentTextSize = textSize;
             }
 
             if (!Arrays.equals(this.currentTextDoubleStrike, textDoubleStrike)) {
-        ///        this.printerConnection.write(textDoubleStrike);
+                ///        this.printerConnection.write(textDoubleStrike);
                 this.currentTextDoubleStrike = textDoubleStrike;
             }
 
             if (!Arrays.equals(this.currentTextUnderline, textUnderline)) {
-         //       this.printerConnection.write(textUnderline);
+                //       this.printerConnection.write(textUnderline);
                 this.currentTextUnderline = textUnderline;
             }
 
             if (!Arrays.equals(this.currentTextBold, textBold)) {
-        //        this.printerConnection.write(textBold);
+                //        this.printerConnection.write(textBold);
                 this.currentTextBold = textBold;
             }
 
             if (!Arrays.equals(this.currentTextColor, textColor)) {
-         //       this.printerConnection.write(textColor);
+                //       this.printerConnection.write(textColor);
                 this.currentTextColor = textColor;
             }
 
@@ -525,9 +523,9 @@ public class EscPosPrinterCommands {
                 this.printerConnection.write(textReverseColor);
                 this.currentTextReverseColor = textReverseColor;
             }
-       //     this.printerConnection.write(textBytes);
+            //     this.printerConnection.write(textBytes);
             byteArrayList.add(textBytes);
-         //   this.printerConnection.write(textBytes);
+            //   this.printerConnection.write(textBytes);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -617,7 +615,7 @@ public class EscPosPrinterCommands {
         byte[][] bytesToPrint = this.useEscAsteriskCommand ? EscPosPrinterCommands.convertGSv0ToEscAsterisk(image) : new byte[][]{image};
 
         for (byte[] bytes : bytesToPrint) {
-           // this.printerConnection.write(bytes);
+            // this.printerConnection.write(bytes);
             byteArrayList.add(bytes);
             this.printerConnection.send();
         }
@@ -640,14 +638,14 @@ public class EscPosPrinterCommands {
         int barcodeLength = barcode.getCodeLength();
         byte[] barcodeCommand = new byte[barcodeLength + 6];
         //  0x7B, 0x42,
-        if(barcode.getBarcodeType() == EscPosPrinterCommands.BARCODE_TYPE_128){
+        if (barcode.getBarcodeType() == EscPosPrinterCommands.BARCODE_TYPE_128) {
             barcodeCommand = new byte[barcodeLength + 6];
-            System.arraycopy(new byte[]{0x1D, 0x6B, (byte) barcode.getBarcodeType(), (byte) (barcodeLength+2),0x7B, 0x42}, 0, barcodeCommand, 0, 6);
+            System.arraycopy(new byte[]{0x1D, 0x6B, (byte) barcode.getBarcodeType(), (byte) (barcodeLength + 2), 0x7B, 0x42}, 0, barcodeCommand, 0, 6);
             for (int i = 0; i < barcodeLength; i++) {
                 barcodeCommand[i + 6] = (byte) code.charAt(i);
             }
 
-        }else {
+        } else {
             barcodeCommand = new byte[barcodeLength + 4];
             System.arraycopy(new byte[]{0x1D, 0x6B, (byte) barcode.getBarcodeType(), (byte) barcodeLength}, 0, barcodeCommand, 0, 4);
             for (int i = 0; i < barcodeLength; i++) {
@@ -670,11 +668,6 @@ public class EscPosPrinterCommands {
                 0x49,  // I
                 0x48      // Data: Control characters
         };*/
-
-
-        this.printerConnection.write(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
-        this.printerConnection.write(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
-        this.printerConnection.write(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});
         this.printerConnection.write(barcodeCommand);
         return this;
     }
@@ -814,10 +807,10 @@ public class EscPosPrinterCommands {
         return this.charsetEncoding;
     }
 
-    public  void print(){
-       // byte[] messageByteArray = toPrimitive(byteArrayList);
+    public void print() {
+        // byte[] messageByteArray = toPrimitive(byteArrayList);
 
-        for (byte[] bytes : byteArrayList){
+        for (byte[] bytes : byteArrayList) {
             this.printerConnection.write(bytes);
         }
 

@@ -649,13 +649,11 @@ public class MainActivity extends AppCompatActivity {
 
         String terminalId = "Counter-1";
         String testStirng =
-                "[C]Barnoi Life style\n" +
-                        policiesTwo +
-
-
-                        "[C]<barcode type='128' width='50' height='36' text='none'>XRHR8075IH</barcode>\n" +
-                        "[C]Powered by: Softzino Technologies\n" +
-                        "[C]https://softzio.com";
+             /*   "[C]Barnoi Life style\n" +
+                        policiesTwo +*/
+                "[C]<barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n";
+                       /* "[C]Powered by: Softzino Technologies\n" +
+                        "[C]https://softzio.com";*/
         //  policiesTwo +*/
         // "[C] <barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n";
         String printString = "";
@@ -664,7 +662,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPrinterCommand sharedPrinterCommand = new SharedPrinterCommand(sharedPrinterSize.getEncoding(),
                 printerShare);
-        sharedPrinterCommand.useEscAsteriskCommand(true);
+        sharedPrinterCommand.useEscAsteriskCommand(false);
         SharedPrintTextParser textParser = new SharedPrintTextParser(sharedPrinterSize);
         String[] stringLines = testStirng.split("\n|\r\n");
         SharedPrinterTextParserLine[] linesParsed = new SharedPrinterTextParserLine[stringLines.length];
@@ -720,7 +718,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         ByteArrayInputStream textStream = new ByteArrayInputStream(messageByteArray);
-        InputStream[] streams = {fontsize,lfStream, density, textStream, feedStream};
+        InputStream[] streams = {fontsize, density,lfStream, textStream, feedStream, cutStream};
         SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
 
         // Send the print job
