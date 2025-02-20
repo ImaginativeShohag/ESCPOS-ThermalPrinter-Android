@@ -649,8 +649,15 @@ public class MainActivity extends AppCompatActivity {
 
         String terminalId = "Counter-1";
         String testStirng =
-
-                "[C] <barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n";
+                "[C]<b>" + title + "</b>\n" +
+                        "[C]Phone: 01924547474\n" +
+                        "[L]Cashier:" + cashier + "[R]Terminal ID:" + terminalId + "\n" +
+                        policiesOne +
+                        policiesTwo +
+                        "[C]Thanks for being with us\n" +
+                        "[C] <barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n" +
+                        "[C]Powered by: Softzino Technologies\n" +
+                        "[C]https://softzio.com\n";
         //  policiesTwo +*/
         // "[C] <barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n";
         String printString = "";
@@ -659,7 +666,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPrinterCommand sharedPrinterCommand = new SharedPrinterCommand(sharedPrinterSize.getEncoding(),
                 printerShare);
-        sharedPrinterCommand.useEscAsteriskCommand(true);
+        sharedPrinterCommand.useEscAsteriskCommand(false);
         SharedPrintTextParser textParser = new SharedPrintTextParser(sharedPrinterSize);
         String[] stringLines = testStirng.split("\n|\r\n");
         SharedPrinterTextParserLine[] linesParsed = new SharedPrinterTextParserLine[stringLines.length];
@@ -712,7 +719,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         ByteArrayInputStream textStream = new ByteArrayInputStream(messageByteArray);
-        InputStream[] streams = {fontsize, density, lfStream, textStream, feedStream, cutStream};
+        InputStream[] streams = {lfStream,fontsize, density, textStream, feedStream, cutStream};
         SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
 
         // Send the print job
