@@ -340,39 +340,44 @@ public class SharedPrinterCommand {
 
             if (!Arrays.equals(this.currentTextSize, textSize)) {
                 // this.printerConnection.write(textSize);
+                byteArrayList.add(textSize);
                 this.currentTextSize = textSize;
-                //  byteArrayList.add(textSize);
+
 
             }
 
             if (!Arrays.equals(this.currentTextDoubleStrike, textDoubleStrike)) {
                 //      this.printerConnection.write(textDoubleStrike);
+               // byteArrayList.add(textDoubleStrike);
                 this.currentTextDoubleStrike = textDoubleStrike;
-                //   byteArrayList.add(textDoubleStrike);
+
             }
 
             if (!Arrays.equals(this.currentTextUnderline, textUnderline)) {
                 //    this.printerConnection.write(textUnderline);
+             //   byteArrayList.add(textUnderline);
                 this.currentTextUnderline = textUnderline;
-                //  byteArrayList.add(textUnderline);
+
 
             }
 
             if (!Arrays.equals(this.currentTextBold, textBold)) {
                 //  this.printerConnection.write(textBold);
+                byteArrayList.add(textBold);
                 this.currentTextBold = textBold;
-                // byteArrayList.add(textBold);
+
             }
 
             if (!Arrays.equals(this.currentTextColor, textColor)) {
                 //    this.printerConnection.write(textColor);
+                byteArrayList.add(textColor);
                 this.currentTextColor = textColor;
-                // byteArrayList.add(textColor);
+
             }
 
             if (!Arrays.equals(this.currentTextReverseColor, textReverseColor)) {
                 //     this.printerConnection.write(textReverseColor);
-                byteArrayList.add(textReverseColor);
+              //  byteArrayList.add(textReverseColor);
                 this.currentTextReverseColor = textReverseColor;
             }
             // Log.d("Log404", "byte :  " + bytesToHex(textBytes));
@@ -383,6 +388,7 @@ public class SharedPrinterCommand {
             InputStream[] streams = {data};
             SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
             printerShare.print(fullStream);*/
+
             byteArrayList.add(textBytes);
 
         } catch (UnsupportedEncodingException e) {
@@ -455,10 +461,11 @@ public class SharedPrinterCommand {
         }*/
 
         byte[][] bytesToPrint = this.useEscAsteriskCommand ? SharedPrinterCommand.convertGSv0ToEscAsterisk(image) : new byte[][]{image};
-
+        byteArrayList.add(new byte[]{0x0A});
         for (byte[] bytes : bytesToPrint) {
             // this.printerConnection.write(bytes);
             //
+
             byteArrayList.add(bytes);
             // this.printerConnection.send();
             //  printerShare.print(new ByteArrayInputStream(bytes));

@@ -666,7 +666,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPrinterCommand sharedPrinterCommand = new SharedPrinterCommand(sharedPrinterSize.getEncoding(),
                 printerShare);
-        sharedPrinterCommand.useEscAsteriskCommand(false);
+        sharedPrinterCommand.useEscAsteriskCommand(true);
         SharedPrintTextParser textParser = new SharedPrintTextParser(sharedPrinterSize);
         String[] stringLines = testStirng.split("\n|\r\n");
         SharedPrinterTextParserLine[] linesParsed = new SharedPrinterTextParserLine[stringLines.length];
@@ -719,7 +719,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         ByteArrayInputStream textStream = new ByteArrayInputStream(messageByteArray);
-        InputStream[] streams = {lfStream,fontsize, density, textStream, feedStream, cutStream};
+        InputStream[] streams = {fontsize, density,lfStream, textStream, feedStream, cutStream};
         SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
 
         // Send the print job
