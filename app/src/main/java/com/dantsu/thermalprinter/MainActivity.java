@@ -488,7 +488,7 @@ public class MainActivity extends AppCompatActivity {
         AsyncEscPosPrinter printer = new AsyncEscPosPrinter(printerConnection, 203, 88f, 64);
 
         String policyOne = "BARNOi Lifestyle-এর এক্সচেঞ্জ পলিসি অনুযায়ী পণ্যগুলি ৩ দিনের মধ্যে এক্সচেঞ্জ করা যেতে পারে প্রতিটি আইটেম একবার এক্সচেঞ্জ  যোগ্য";
-        List<String> policiesOneList = getText(policyOne, 60);
+        List<String> policiesOneList = getText(policyOne, 64);
         String policiesOne = "";
         for (String line : policiesOneList) {
             String hexBitmap = PrinterTextParserImg.bitmapToHexadecimalString(printer, createBitmapFromText(line, Typeface.DEFAULT));
@@ -496,7 +496,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String policyTwo = ". ক্যাশ রিফান্ড প্রযোজ্য নয়,প্রযোজ্য ক্ষেত্রে ফেরত দেওয়া পণ্যের মূল্যের সমপরিমাণ একটি ক্রেডিট নোট প্রদান করা হবে";
-        List<String> policiesTwoList = getText(policyTwo, 60);
+        List<String> policiesTwoList = getText(policyTwo, 64);
         String policiesTwo = "";
         for (String line : policiesTwoList) {
             String hexBitmap = PrinterTextParserImg.bitmapToHexadecimalString(printer, createBitmapFromText(line, Typeface.DEFAULT));
@@ -609,7 +609,7 @@ public class MainActivity extends AppCompatActivity {
         paint.setColor(Color.BLACK);
 
         int width = (int) paint.measureText(text);
-        int height = (int) (paint.getFontMetrics().bottom - paint.getFontMetrics().top);
+        int height = (int) (paint.getFontMetrics().descent - paint.getFontMetrics().ascent);
 
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
@@ -618,7 +618,7 @@ public class MainActivity extends AppCompatActivity {
         canvas.drawRect(0, 0, width, height, backgroundPaint);
 
 
-        canvas.drawText(text, 0, -paint.getFontMetrics().top, paint);
+        canvas.drawText(text, 0, -paint.getFontMetrics().ascent, paint);
 
         for (int x = 0; x < bitmap.getWidth(); x++) {
             for (int y = 0; y < bitmap.getHeight(); y++) {

@@ -36,8 +36,8 @@ public class SharedPrinterCommand {
     public static final byte[] TEXT_WEIGHT_NORMAL = new byte[]{0x1B, 0x45, 0x00};
     public static final byte[] TEXT_WEIGHT_BOLD = new byte[]{0x1B, 0x45, 0x01};
 
-    public static final byte[] LINE_SPACING_24 = {0x1b, 0x33, 0x18};
-    public static final byte[] LINE_SPACING_30 = {0x1b, 0x33, 0x1e};
+    public static final byte[] LINE_SPACING_24 = {0x1b, 0x33, 0x00};
+    public static final byte[] LINE_SPACING_30 = {0x1b, 0x33, 0x01};
 
     public static final byte[] TEXT_FONT_A = new byte[]{0x1B, 0x4D, 0x00};
     public static final byte[] TEXT_FONT_B = new byte[]{0x1B, 0x4D, 0x01};
@@ -209,7 +209,7 @@ public class SharedPrinterCommand {
             imageBytes[imageBytes.length - 1] = SharedPrinterCommand.LF;
             returnedBytes[i + 1] = imageBytes;
         }
-        returnedBytes[returnedBytes.length - 1] = SharedPrinterCommand.LINE_SPACING_24;
+        returnedBytes[returnedBytes.length - 1] = SharedPrinterCommand.LINE_SPACING_30;
         return returnedBytes;
     }
 
@@ -327,8 +327,8 @@ public class SharedPrinterCommand {
         }
 
         try {
-            byte[] textBytes = text.getBytes(this.charsetEncoding.getName());
 
+            byte[] textBytes = text.getBytes(this.charsetEncoding.getName());
 
             if (!Arrays.equals(this.currentTextSize, textSize)) {
                 byteArrayList.add(textSize);
@@ -384,11 +384,10 @@ public class SharedPrinterCommand {
     public SharedPrinterCommand printImage(byte[] image) throws EscPosConnectionException {
         byte[][] bytesToPrint = this.useEscAsteriskCommand ? SharedPrinterCommand.convertGSv0ToEscAsterisk(image) : new byte[][]{image};
 
-        byteArrayList.add(new byte[]{0x1b, 0x33, 0x02});
         byteArrayList.add(new byte[]{0x0A});
+        byteArrayList.add(  new byte[]{0x1B, 0x33, 0x00});
         for (byte[] bytes : bytesToPrint) {
             byteArrayList.add(bytes);
-            //printerShare.print(new ByteArrayInputStream(bytes));
         }
 
         return this;
@@ -439,20 +438,6 @@ public class SharedPrinterCommand {
         return this;
     }
 
-    public SharedPrinterCommand newLine() throws EscPosConnectionException {
-        return this.newLine(null);
-    }
-
-    public SharedPrinterCommand newLine(byte[] align) throws EscPosConnectionException {
-
-        byteArrayList.add(new byte[]{SharedPrinterCommand.LF});
-
-        if (align != null) {
-            byteArrayList.add(align);
-        }
-
-        return this;
-    }
 
 
     public SharedPrinterCommand feedPaper(int dots) throws EscPosConnectionException {
