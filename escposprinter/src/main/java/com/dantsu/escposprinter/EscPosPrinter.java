@@ -136,7 +136,6 @@ public class EscPosPrinter extends EscPosPrinterSize {
                 this.printer.newLine();
             }
         }
-        this.printer.print();
         this.printer.feedPaper(dotsFeedPaper);
         return this;
     }

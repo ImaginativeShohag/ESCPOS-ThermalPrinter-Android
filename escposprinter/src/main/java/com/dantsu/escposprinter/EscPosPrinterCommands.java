@@ -1,7 +1,6 @@
 package com.dantsu.escposprinter;
 
 import android.graphics.Bitmap;
-import android.os.Build;
 
 import com.dantsu.escposprinter.barcode.Barcode;
 import com.dantsu.escposprinter.connection.DeviceConnection;
@@ -16,10 +15,8 @@ import com.google.zxing.qrcode.encoder.Encoder;
 import com.google.zxing.qrcode.encoder.QRCode;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.List;
 
 public class EscPosPrinterCommands {
 
@@ -85,7 +82,6 @@ public class EscPosPrinterCommands {
     private DeviceConnection printerConnection;
     private EscPosCharsetEncoding charsetEncoding;
     private boolean useEscAsteriskCommand;
-    private final List<byte[]> byteArrayList;
 
 
     public static byte[] initGSv0Command(int bytesByLine, int bitmapHeight) {
@@ -304,7 +300,6 @@ public class EscPosPrinterCommands {
      * @param charsetEncoding   Set the charset encoding.
      */
     public EscPosPrinterCommands(DeviceConnection printerConnection, EscPosCharsetEncoding charsetEncoding) {
-        byteArrayList = new ArrayList<>();
         this.printerConnection = printerConnection;
         this.charsetEncoding = charsetEncoding != null ? charsetEncoding : new EscPosCharsetEncoding("windows-1252", 6);
     }
@@ -347,8 +342,6 @@ public class EscPosPrinterCommands {
             return this;
         }
         this.printerConnection.write(align);
-
-        byteArrayList.add(align);
         return this;
     }
 
@@ -490,32 +483,32 @@ public class EscPosPrinterCommands {
 
         try {
             byte[] textBytes = text.getBytes(this.charsetEncoding.getName());
-            //.  this.printerConnection.write(this.charsetEncoding.getCommand());
+            this.printerConnection.write(this.charsetEncoding.getCommand());
             //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
 
 
             if (!Arrays.equals(this.currentTextSize, textSize)) {
-                //       this.printerConnection.write(textSize);
+                this.printerConnection.write(textSize);
                 this.currentTextSize = textSize;
             }
 
             if (!Arrays.equals(this.currentTextDoubleStrike, textDoubleStrike)) {
-                ///        this.printerConnection.write(textDoubleStrike);
+                this.printerConnection.write(textDoubleStrike);
                 this.currentTextDoubleStrike = textDoubleStrike;
             }
 
             if (!Arrays.equals(this.currentTextUnderline, textUnderline)) {
-                //       this.printerConnection.write(textUnderline);
+                this.printerConnection.write(textUnderline);
                 this.currentTextUnderline = textUnderline;
             }
 
             if (!Arrays.equals(this.currentTextBold, textBold)) {
-                //        this.printerConnection.write(textBold);
+                this.printerConnection.write(textBold);
                 this.currentTextBold = textBold;
             }
 
             if (!Arrays.equals(this.currentTextColor, textColor)) {
-                //       this.printerConnection.write(textColor);
+                this.printerConnection.write(textColor);
                 this.currentTextColor = textColor;
             }
 
@@ -523,9 +516,7 @@ public class EscPosPrinterCommands {
                 this.printerConnection.write(textReverseColor);
                 this.currentTextReverseColor = textReverseColor;
             }
-            //     this.printerConnection.write(textBytes);
-            byteArrayList.add(textBytes);
-            //   this.printerConnection.write(textBytes);
+            this.printerConnection.write(textBytes);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -615,8 +606,7 @@ public class EscPosPrinterCommands {
         byte[][] bytesToPrint = this.useEscAsteriskCommand ? EscPosPrinterCommands.convertGSv0ToEscAsterisk(image) : new byte[][]{image};
 
         for (byte[] bytes : bytesToPrint) {
-            // this.printerConnection.write(bytes);
-            byteArrayList.add(bytes);
+            this.printerConnection.write(bytes);
             this.printerConnection.send();
         }
 
@@ -807,34 +797,5 @@ public class EscPosPrinterCommands {
         return this.charsetEncoding;
     }
 
-    public void print() {
-        // byte[] messageByteArray = toPrimitive(byteArrayList);
-
-        for (byte[] bytes : byteArrayList) {
-            this.printerConnection.write(bytes);
-        }
-
-
-    }
-
-    public static byte[] toPrimitive(List<byte[]> byteArrays) {
-        int totalSize = 0;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            totalSize = byteArrays.stream().mapToInt(arr -> arr.length).sum();
-        }
-
-        // Create a new byte array with total size
-        byte[] result = new byte[totalSize];
-
-        // Copy all byte[] elements into the result array
-        int index = 0;
-        for (byte[] array : byteArrays) {
-            System.arraycopy(array, 0, result, index, array.length);
-            index += array.length;
-        }
-
-        return result;
-    }
 }
 

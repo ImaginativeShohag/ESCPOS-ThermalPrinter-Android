@@ -170,17 +170,19 @@ public class MainActivity extends AppCompatActivity {
                             printer.close();*/
                             Log.d("Log404", "run:printing...... ");
                         } catch (EscPosEncodingException e) {
-                            throw new RuntimeException(e);
+                            // throw new RuntimeException(e);
                         } catch (EscPosBarcodeException e) {
-                            throw new RuntimeException(e);
+                            //  throw new RuntimeException(e);
                         } catch (EscPosParserException e) {
-                            throw new RuntimeException(e);
+                            //throw new RuntimeException(e);
                         } catch (EscPosConnectionException e) {
-                            throw new RuntimeException(e);
+                            // throw new RuntimeException(e);
+                        } catch (RuntimeException e) {
+
                         }
 
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        // throw new RuntimeException(e);
                     }
 
                 }
@@ -600,7 +602,7 @@ public class MainActivity extends AppCompatActivity {
 
         // dynamic canvas with text
         Paint paint = new Paint();
-        paint.setTextSize(20); // Adjust font size
+        paint.setTextSize(22); // Adjust font size
         paint.setTypeface(typeface); // Use a Bengali font
         paint.setAntiAlias(true);
 
@@ -618,12 +620,30 @@ public class MainActivity extends AppCompatActivity {
 
         canvas.drawText(text, 0, -paint.getFontMetrics().top, paint);
 
+        for (int x = 0; x < bitmap.getWidth(); x++) {
+            for (int y = 0; y < bitmap.getHeight(); y++) {
+                int pixel = bitmap.getPixel(x, y);
+                int gray = (Color.red(pixel) + Color.green(pixel) + Color.blue(pixel)) / 3;
+                if (gray < 128) {
+                    bitmap.setPixel(x, y, Color.BLACK);
+                } else {
+                    bitmap.setPixel(x, y, Color.WHITE);
+                }
+            }
+        }
+
         return bitmap;
     }
 
-    public void printShared(PrinterShare printerShare) throws EscPosEncodingException, EscPosBarcodeException, EscPosParserException, EscPosConnectionException, IOException {
+    public void printShared(PrinterShare printerShare) throws EscPosEncodingException, EscPosBarcodeException, EscPosParserException, EscPosConnectionException, IOException, RuntimeException {
         String cashier = "Admin";
         String title = "Barnoi Lifestyle";
+        String paymentInvoice = "------------------------Payment Invoice------------------------";
+        String invoiceNo = "OVWUGTTNXQ";
+        String customerName = "John Doe";
+        String customerPhone = "01924547474";
+        String terminalId = "Counter-1";
+        String totalProduct = "1";
 
         SharedPrinterSize sharedPrinterSize = new SharedPrinterSize(203,
                 88f,
@@ -647,23 +667,21 @@ public class MainActivity extends AppCompatActivity {
             policiesTwo = policiesTwo + "[L]<img>" + hexBitmap + "</img>\n";
         }
 
-        String terminalId = "Counter-1";
         String testStirng =
                 "[C]<b>" + title + "</b>\n" +
                         "[C]Phone: 01924547474\n" +
+                        "[L]Invoice No: <b>" + invoiceNo + "</b>\n" +
+                        "[L]Invoice Date: " + "12-23-43 12:12Am" + "\n" +
+                        "[L]Customer Name:" + customerName + "\n" +
+                        "[L]Phone:" + customerPhone + "\n" +
                         "[L]Cashier:" + cashier + "[R]Terminal ID:" + terminalId + "\n" +
                         policiesOne +
                         policiesTwo +
                         "[C]Thanks for being with us\n" +
                         "[C] <barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n" +
                         "[C]Powered by: Softzino Technologies\n" +
-                        "[C]https://softzio.com\n";
-        //  policiesTwo +*/
-        // "[C] <barcode type='128' width='50' height='40' text='none'>XRHR8075IH</barcode>\n";
-        String printString = "";
-
-        EscPosCharsetEncoding d = new EscPosCharsetEncoding("windows-1252", 16);
-
+                        "[C]https://softzio.com\n" +
+                        "[C]\n";
         SharedPrinterCommand sharedPrinterCommand = new SharedPrinterCommand(sharedPrinterSize.getEncoding(),
                 printerShare);
         sharedPrinterCommand.useEscAsteriskCommand(false);
@@ -672,40 +690,22 @@ public class MainActivity extends AppCompatActivity {
         SharedPrinterTextParserLine[] linesParsed = new SharedPrinterTextParserLine[stringLines.length];
         int i = 0;
         for (String line : stringLines) {
-            Log.d("Log404", "printing2 :   " + line);
             linesParsed[i++] = new SharedPrinterTextParserLine(textParser, line);
         }
-
-
         sharedPrinterCommand.reset();
-
         for (SharedPrinterTextParserLine line : linesParsed) {
             SharedPrinterTextColumn[] columns = line.getColumns();
-            Log.d("Log404", "Printing7:   " + line.getColumns().length);
-
-            ISharedPrinterTextParserElement lastElement = null;
             for (SharedPrinterTextColumn column : columns) {
                 ISharedPrinterTextParserElement[] elements = column.getElements();
                 for (ISharedPrinterTextParserElement element : elements) {
-                    //  SharedPrinterTextParserString print = (SharedPrinterTextParserString) element;
-                    //  Log.d("Log404", "Printing10:   " + print.getText());
-                    //  printString = printString + print.getText();
                     element.print(sharedPrinterCommand);
-                    lastElement = element;
                 }
             }
-
-            if (lastElement instanceof ISharedPrinterTextParserElement) {
-                printString = printString + "\n";
-
-            }
         }
-
 
         byte[] LF = new byte[]{0x0A};  // Feed 5 lines
         byte[] FEED_PAPER = new byte[]{0x1B, 0x64, 0x05};  // Feed 5 lines
         byte[] CUT_PAPER = new byte[]{0x1D, 0x56, 0x00};   // Full cut
-
         byte[] setCharSizeNormal = new byte[]{0x1b, 0x21, 0x01};
         byte[] setPrintDensity = new byte[]{0x1D, 0x7C, 0x03};
         ByteArrayInputStream feedStream = new ByteArrayInputStream(FEED_PAPER);
@@ -713,24 +713,13 @@ public class MainActivity extends AppCompatActivity {
         ByteArrayInputStream lfStream = new ByteArrayInputStream(LF);
         ByteArrayInputStream fontsize = new ByteArrayInputStream(setCharSizeNormal);
         ByteArrayInputStream density = new ByteArrayInputStream(setPrintDensity);
-
-        ArrayList<ByteArrayInputStream> finalStream = new ArrayList<ByteArrayInputStream>();
         byte[] messageByteArray = toPrimitive(sharedPrinterCommand.getByteArrayList());
-
-
         ByteArrayInputStream textStream = new ByteArrayInputStream(messageByteArray);
-        InputStream[] streams = {fontsize, density,lfStream, textStream, feedStream, cutStream};
+        InputStream[] streams = {fontsize, density, lfStream, textStream, feedStream, cutStream};
         SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
-
-        // Send the print job
         printerShare.print(fullStream);
-
-
         printerShare.close();
-
     }
-
-
 }
 
 

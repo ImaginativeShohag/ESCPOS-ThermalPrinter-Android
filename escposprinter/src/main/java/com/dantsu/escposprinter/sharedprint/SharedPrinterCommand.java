@@ -36,7 +36,7 @@ public class SharedPrinterCommand {
     public static final byte[] TEXT_WEIGHT_NORMAL = new byte[]{0x1B, 0x45, 0x00};
     public static final byte[] TEXT_WEIGHT_BOLD = new byte[]{0x1B, 0x45, 0x01};
 
-    public static final byte[] LINE_SPACING_24 = {0x1b, 0x33, 0x03};
+    public static final byte[] LINE_SPACING_24 = {0x1b, 0x33, 0x18};
     public static final byte[] LINE_SPACING_30 = {0x1b, 0x33, 0x1e};
 
     public static final byte[] TEXT_FONT_A = new byte[]{0x1B, 0x4D, 0x00};
@@ -209,7 +209,7 @@ public class SharedPrinterCommand {
             imageBytes[imageBytes.length - 1] = SharedPrinterCommand.LF;
             returnedBytes[i + 1] = imageBytes;
         }
-        returnedBytes[returnedBytes.length - 1] = SharedPrinterCommand.LINE_SPACING_30;
+        returnedBytes[returnedBytes.length - 1] = SharedPrinterCommand.LINE_SPACING_24;
         return returnedBytes;
     }
 
@@ -287,16 +287,11 @@ public class SharedPrinterCommand {
 
 
     public SharedPrinterCommand connect() throws EscPosConnectionException {
-        //  this.printerConnection.connect();
         return this;
     }
 
 
     public SharedPrinterCommand setAlign(byte[] align) {
-       /* if (!this.printerConnection.isConnected()) {
-            return this;
-        }*/
-        //  this.printerConnection.write(align);
         byteArrayList.add(align);
         return this;
     }
@@ -333,12 +328,9 @@ public class SharedPrinterCommand {
 
         try {
             byte[] textBytes = text.getBytes(this.charsetEncoding.getName());
-            //   this.printerConnection.write(this.charsetEncoding.getCommand());
-            //this.printerConnection.write(EscPosPrinterCommands.TEXT_FONT_A);
 
 
             if (!Arrays.equals(this.currentTextSize, textSize)) {
-                // this.printerConnection.write(textSize);
                 byteArrayList.add(textSize);
                 this.currentTextSize = textSize;
 
@@ -346,61 +338,42 @@ public class SharedPrinterCommand {
             }
 
             if (!Arrays.equals(this.currentTextDoubleStrike, textDoubleStrike)) {
-                //      this.printerConnection.write(textDoubleStrike);
-               // byteArrayList.add(textDoubleStrike);
+                // byteArrayList.add(textDoubleStrike);
                 this.currentTextDoubleStrike = textDoubleStrike;
 
             }
 
             if (!Arrays.equals(this.currentTextUnderline, textUnderline)) {
-                //    this.printerConnection.write(textUnderline);
-             //   byteArrayList.add(textUnderline);
+                //   byteArrayList.add(textUnderline);
                 this.currentTextUnderline = textUnderline;
 
 
             }
 
             if (!Arrays.equals(this.currentTextBold, textBold)) {
-                //  this.printerConnection.write(textBold);
                 byteArrayList.add(textBold);
                 this.currentTextBold = textBold;
 
             }
 
             if (!Arrays.equals(this.currentTextColor, textColor)) {
-                //    this.printerConnection.write(textColor);
                 byteArrayList.add(textColor);
                 this.currentTextColor = textColor;
 
             }
 
             if (!Arrays.equals(this.currentTextReverseColor, textReverseColor)) {
-                //     this.printerConnection.write(textReverseColor);
-              //  byteArrayList.add(textReverseColor);
+                //  byteArrayList.add(textReverseColor);
                 this.currentTextReverseColor = textReverseColor;
             }
-            // Log.d("Log404", "byte :  " + bytesToHex(textBytes));
-
-            //    this.printerConnection.write(textBytes);
-
-          /*  ByteArrayInputStream data = new ByteArrayInputStream(textBytes);
-            InputStream[] streams = {data};
-            SequenceInputStream fullStream = new SequenceInputStream(Collections.enumeration(Arrays.asList(streams)));
-            printerShare.print(fullStream);*/
-
             byteArrayList.add(textBytes);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             throw new EscPosEncodingException(e.getMessage());
         }
-
-
         return this;
     }
-
-
-
 
 
     public SharedPrinterCommand useEscAsteriskCommand(boolean enable) {
@@ -409,20 +382,13 @@ public class SharedPrinterCommand {
     }
 
     public SharedPrinterCommand printImage(byte[] image) throws EscPosConnectionException {
-       /* if (!this.printerConnection.isConnected()) {
-            return this;
-        }*/
         byte[][] bytesToPrint = this.useEscAsteriskCommand ? SharedPrinterCommand.convertGSv0ToEscAsterisk(image) : new byte[][]{image};
-       // byteArrayList.add(new byte[]{0x1B, 0x40});
 
         byteArrayList.add(new byte[]{0x1b, 0x33, 0x02});
         byteArrayList.add(new byte[]{0x0A});
         for (byte[] bytes : bytesToPrint) {
-            // this.printerConnection.write(bytes);
-
             byteArrayList.add(bytes);
-            // this.printerConnection.send();
-            //  printerShare.print(new ByteArrayInputStream(bytes));
+            //printerShare.print(new ByteArrayInputStream(bytes));
         }
 
         return this;
@@ -453,13 +419,6 @@ public class SharedPrinterCommand {
         }
 
 
-       /* this.printerConnection.write(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
-        this.printerConnection.write(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
-        this.printerConnection.write(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});*/
-        //  this.printerConnection.write(barcodeCommand);
-/*        byteArrayList.add(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
-        byteArrayList.add(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
-        byteArrayList.add(new byte[]{0x1D, 0x68, (byte) barcode.getHeight()});*/
         byteArrayList.add(new byte[]{0x0A});
         byteArrayList.add(new byte[]{0x1D, 0x48, (byte) barcode.getTextPosition()});
         byteArrayList.add(new byte[]{0x1D, 0x77, (byte) barcode.getColWidth()});
@@ -476,7 +435,7 @@ public class SharedPrinterCommand {
     }
 
     public SharedPrinterCommand reset() {
-          printerShare.print(new ByteArrayInputStream(new byte[]{0x1B, 0x40}));
+        printerShare.print(new ByteArrayInputStream(new byte[]{0x1B, 0x40}));
         return this;
     }
 
@@ -485,16 +444,10 @@ public class SharedPrinterCommand {
     }
 
     public SharedPrinterCommand newLine(byte[] align) throws EscPosConnectionException {
-       /* if (!this.printerConnection.isConnected()) {
-            return this;
-        }*/
 
-        //  this.printerConnection.write(new byte[]{EscPosPrinterCommands.LF});
-        //  this.printerConnection.send();
         byteArrayList.add(new byte[]{SharedPrinterCommand.LF});
 
         if (align != null) {
-            //this.printerConnection.write(align);
             byteArrayList.add(align);
         }
 
@@ -525,22 +478,6 @@ public class SharedPrinterCommand {
         // FIXME: 2/19/25 add cut paper
         // new byte[]{0x1B, 0x4A, (byte) dots}
         return this;
-    }
-
-
-    public SharedPrinterCommand openCashBox() throws EscPosConnectionException {
-       /* if (!this.printerConnection.isConnected()) {
-            return this;
-        }*/
-
-        //  this.printerConnection.write(new byte[]{0x1B, 0x70, 0x00, 0x3C, (byte) 0xFF});
-        //  this.printerConnection.send(100);
-        return this;
-    }
-
-
-    public EscPosCharsetEncoding getCharsetEncoding() {
-        return this.charsetEncoding;
     }
 
     public List<byte[]> getByteArrayList() {
