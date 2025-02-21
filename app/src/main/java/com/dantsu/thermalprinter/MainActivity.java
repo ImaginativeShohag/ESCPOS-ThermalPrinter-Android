@@ -638,7 +638,7 @@ public class MainActivity extends AppCompatActivity {
             policiesOne = policiesOne + "[L]<img>" + hexBitmap + "</img>\n";
         }
 
-        String policyTwo = ". ক্যাশ রিফান্ড প্রযোজ্য নয়,প্রযোজ্য ক্ষেত্রে ফেরত দেওয়া পণ্যের মূল্যের সমপরিমাণ একটি ক্রেডিট নোট প্রদান করা হবে";
+        String policyTwo = ".ক্যাশ রিফান্ড প্রযোজ্য নয়,প্রযোজ্য ক্ষেত্রে ফেরত দেওয়া পণ্যের মূল্যের সমপরিমাণ একটি ক্রেডিট নোট প্রদান করা হবে";
         List<String> policiesTwoList = getText(policyTwo, 60);
         String policiesTwo = "";
         for (String line : policiesTwoList) {
@@ -666,7 +666,7 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPrinterCommand sharedPrinterCommand = new SharedPrinterCommand(sharedPrinterSize.getEncoding(),
                 printerShare);
-        sharedPrinterCommand.useEscAsteriskCommand(true);
+        sharedPrinterCommand.useEscAsteriskCommand(false);
         SharedPrintTextParser textParser = new SharedPrintTextParser(sharedPrinterSize);
         String[] stringLines = testStirng.split("\n|\r\n");
         SharedPrinterTextParserLine[] linesParsed = new SharedPrinterTextParserLine[stringLines.length];
